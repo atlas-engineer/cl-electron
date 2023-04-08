@@ -1,0 +1,21 @@
+* cl-electron - Electron binding for Common Lisp
+
+** About
+ cl-electron is a binding to electron for Common Lisp.
+
+** Dependencies
+- A working installation of Electron.
+- A Common Lisp.
+
+** Installation
+Assuming you have [Quicklisp] installed, do
+
+1. Clone to =~/common-lisp/quicklisp/local-projects/cl-electron=
+2. > lisp
+3. > (ql:quickload :cl-electron)
+
+** Copying
+cl-webkit is distributed under the BSD license.
+
+Please note that this licence only covers the binding itself. Refer to
+the distribution terms of the third-party dependencies for details.
