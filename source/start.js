@@ -29,11 +29,3 @@ const server = net.createServer((socket) => {
 server.listen(3000, () => {
     console.log('Server listening on port 3000');
 });
-
-const createWindow = () => {
-    // Create the browser window.
-    const mainWindow = new BrowserWindow({
-        width: 800,
-        height: 600,
-    })
-}

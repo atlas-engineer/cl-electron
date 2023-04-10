@@ -9,4 +9,8 @@
 
 
 (defun create-window ()
-  (send-message "app.whenReady().then(() => { createWindow() })"))
+  (send-message
+   "const mainWindow = new BrowserWindow({
+        width: 800,
+        height: 600,
+    })"))
