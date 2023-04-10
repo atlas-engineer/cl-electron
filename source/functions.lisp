@@ -12,12 +12,12 @@
   "Generate a new unique ID."
   (symbol-name (gensym "ID")))
 
-(defun create-window ()
+(defun window-make ()
   (let ((id (new-id)))
     (send-message
      (format nil "~a = new BrowserWindow({})" id))
     id))
 
-(defun delete-window (id)
+(defun window-delete (id)
   (send-message
    (format nil "~a.close()" id)))
