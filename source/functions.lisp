@@ -21,3 +21,11 @@
 (defun window-delete (id)
   (send-message
    (format nil "~a.close()" id)))
+
+(defun window-fullscreen (id)
+  (send-message
+   (format nil "~a.setFullScreen(true)" id)))
+
+(defun window-unfullscreen (id)
+  (send-message
+   (format nil "~a.setFullScreen(false)" id)))
