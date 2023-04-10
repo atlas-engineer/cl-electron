@@ -32,8 +32,16 @@
 
 (defun window-maximize (id)
   (send-message
-   (format nil "~a.maximize()")))
+   (format nil "~a.maximize()" id)))
 
 (defun window-unmaximize (id)
   (send-message
-   (format nil "~a.unmaximize()")))
+   (format nil "~a.unmaximize()" id)))
+
+(defun window-title (id)
+  (send-message
+   (format nil "~a.getTitle()" id)))
+
+(defun window-set-title (id title)
+  (send-message
+   (format nil "~a.setTitle(~a)" id title)))
