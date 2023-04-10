@@ -45,3 +45,11 @@
 (defun window-set-title (id title)
   (send-message
    (format nil "~a.setTitle(~a)" id title)))
+
+(defun window-active (id)
+  (send-message
+   (format nil "~a.isFocused()" id)))
+
+(defun window-set-active (id)
+  (send-message
+   (format nil "~a.focus()" id)))
