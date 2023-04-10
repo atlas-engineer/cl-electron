@@ -5,7 +5,8 @@
   (let* ((us (usocket:socket-connect *host* *port*))
          (st (usocket:socket-stream us)))
     (write-line message st)
-    (finish-output st)))
+    (finish-output st)
+    (format t "~A~%" (read-line st))))
 
 
 (defun create-window ()

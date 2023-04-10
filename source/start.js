@@ -12,11 +12,11 @@ const server = net.createServer((socket) => {
             const result = eval(data.toString());
             console.log('Result:', result);
             // Send back the result to the client
-            socket.write(`Result: ${result}\n`);
+            socket.write(`${result}\n`);
         } catch (err) {
             console.log('Error:', err);
             // Send back the error message to the client
-            socket.write(`Error: ${err}\n`);
+            socket.write(`${err}\n`);
         }
     });
 
