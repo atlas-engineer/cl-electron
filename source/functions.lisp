@@ -29,3 +29,11 @@
 (defun window-unfullscreen (id)
   (send-message
    (format nil "~a.setFullScreen(false)" id)))
+
+(defun window-maximize (id)
+  (send-message
+   (format nil "~a.maximize()")))
+
+(defun window-unmaximize (id)
+  (send-message
+   (format nil "~a.unmaximize()")))
