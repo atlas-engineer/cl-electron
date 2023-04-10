@@ -6,16 +6,18 @@
          (st (usocket:socket-stream us)))
     (write-line message st)
     (finish-output st)
-    (format t "~A~%" (read-line st))))
+    (read-line st)))
 
+(defun new-id ()
+  "Generate a new unique ID."
+  (symbol-name (gensym "ID")))
 
 (defun create-window ()
-  (send-message
-   "const mainWindow = new BrowserWindow({
-        width: 800,
-        height: 600,
-    })"))
+  (let ((id (new-id)))
+    (send-message
+     (format nil "~a = new BrowserWindow({})" id))
+    id))
 
-(defun exec-math ()
+(defun delete-window (id)
   (send-message
-   "3+4"))
+   (format nil "~a.close()" id)))
