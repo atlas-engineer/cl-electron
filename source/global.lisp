@@ -1,4 +1,4 @@
 (in-package :cl-electron)
 
-(defvar host "localhost")
-(defvar port 3000)
+(defvar *host* "localhost")
+(defvar *port* 3000)

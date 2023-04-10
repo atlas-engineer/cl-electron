@@ -1,8 +1,12 @@
 (in-package :cl-electron)
 
 
-(defun create-window ()
-  (let* ((us (usocket:socket-connect "127.0.0.1" 3000))
+(defun send-message (message)
+  (let* ((us (usocket:socket-connect *host* *port*))
          (st (usocket:socket-stream us)))
-    (write-line "app.whenReady().then(() => { createWindow() })" st)
+    (write-line message st)
     (finish-output st)))
+
+
+(defun create-window ()
+  (send-message "app.whenReady().then(() => { createWindow() })"))
