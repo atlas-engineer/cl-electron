@@ -14,3 +14,7 @@
         width: 800,
         height: 600,
     })"))
+
+(defun exec-math ()
+  (send-message
+   "3+4"))
