@@ -12,52 +12,52 @@
   "Generate a new unique ID."
   (symbol-name (gensym "ID")))
 
-(defun window-make ()
+(defun browser-window-make ()
   (let ((id (new-id)))
     (send-message
      (format nil "~a = new BrowserWindow({})" id))
     id))
 
-(defun window-delete (id)
+(defun browser-window-delete (id)
   (send-message
    (format nil "~a.close()" id)))
 
-(defun window-fullscreen (id)
+(defun browser-window-fullscreen (id)
   (send-message
    (format nil "~a.setFullScreen(true)" id)))
 
-(defun window-unfullscreen (id)
+(defun browser-window-unfullscreen (id)
   (send-message
    (format nil "~a.setFullScreen(false)" id)))
 
-(defun window-maximize (id)
+(defun browser-window-maximize (id)
   (send-message
    (format nil "~a.maximize()" id)))
 
-(defun window-unmaximize (id)
+(defun browser-window-unmaximize (id)
   (send-message
    (format nil "~a.unmaximize()" id)))
 
-(defun window-title (id)
+(defun browser-window-title (id)
   (send-message
    (format nil "~a.getTitle()" id)))
 
-(defun window-set-title (id title)
+(defun browser-window-set-title (id title)
   (send-message
    (format nil "~a.setTitle(\"~a\")" id title)))
 
-(defun window-active (id)
+(defun browser-window-active (id)
   (send-message
    (format nil "~a.isFocused()" id)))
 
-(defun window-set-active (id)
+(defun browser-window-set-active (id)
   (send-message
    (format nil "~a.focus()" id)))
 
-(defun window-set-background-color (id color)
+(defun browser-window-set-background-color (id color)
   (send-message
    (format nil "~a.setBackgroundColor(\"~a\")" id color)))
 
-(defun window-set-url (id url)
+(defun browser-window-set-url (id url)
   (send-message
    (format nil "~a.loadURL(\"~a\")" id url)))
