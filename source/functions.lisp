@@ -86,7 +86,7 @@
            (if horizontal "true" "false")
            (if vertical "true" "false"))))
 
-(defun browser-view-get-web-contents (id)
+(defun browser-view-web-contents (id)
   (let ((new-id (new-id)))
     (send-message
      (format nil "~a = ~a.webContents" new-id id))
@@ -147,3 +147,9 @@
 (defun web-contents-close-dev-tools (id)
   (send-message
    (format nil "~a.closeDevTools()" id)))
+
+(defun web-contents-session (id)
+  (let ((new-id (new-id)))
+    (send-message
+     (format nil "~a = ~a.session" new-id id))
+    new-id))
