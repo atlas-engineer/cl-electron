@@ -148,6 +148,10 @@
   (send-message
    (format nil "~a.closeDevTools()" id)))
 
+(defun web-contents-get-title (id)
+  (send-message
+   (format nil "~a.getTitle()" id)))
+
 (defun web-contents-session (id)
   (let ((new-id (new-id)))
     (send-message
