@@ -123,3 +123,11 @@
 (defun web-contents-is-audio-muted (id)
   (send-message
    (format nil "~a.isAudioMuted()" id)))
+
+(defun web-contents-set-user-agent (id user-agent)
+  (send-message
+   (format nil "~a.setUserAgent(\"~a\")" id user-agent)))
+
+(defun web-contents-get-user-agent (id)
+  (send-message
+   (format nil "~a.getUserAgent()" id)))
