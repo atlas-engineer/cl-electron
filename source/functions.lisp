@@ -111,3 +111,15 @@
 (defun web-contents-get-zoom-level (id)
   (send-message
    (format nil "~a.getZoomLevel()" id)))
+
+(defun web-contents-set-muted (id muted)
+  (send-message
+   (format nil "~a.setAudioMuted(~a)"
+           id
+           (if muted
+               "true"
+               "false"))))
+
+(defun web-contents-is-audio-muted (id)
+  (send-message
+   (format nil "~a.isAudioMuted()" id)))
