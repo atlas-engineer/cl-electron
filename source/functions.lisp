@@ -168,6 +168,22 @@
   (send-message
    (format nil "~a.redo()" id)))
 
+(defun web-contents-cut (id)
+  (send-message
+   (format nil "~a.cut()" id)))
+
+(defun web-contents-copy (id)
+  (send-message
+   (format nil "~a.copy()" id)))
+
+(defun web-contents-paste (id)
+  (send-message
+   (format nil "~a.paste()" id)))
+
+(defun web-contents-select-all (id)
+  (send-message
+   (format nil "~a.selectAll()" id)))
+
 (defun web-contents-session (id)
   (let ((new-id (new-id)))
     (send-message
