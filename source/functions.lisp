@@ -136,6 +136,10 @@
   (send-message
    (format nil "~a.loadURL(\"~a\")" id url)))
 
+(defun web-contents-get-url (id)
+  (send-message
+   (format nil "~a.getURL()" id)))
+
 (defun web-contents-open-dev-tools (id)
   (send-message
    (format nil "~a.openDevTools()" id)))
