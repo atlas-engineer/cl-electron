@@ -60,7 +60,7 @@ the distribution terms of the third-party dependencies for details.
 + [ ] (define-ffi-generic ffi-buffer-user-agent (buffer)
 + [ ] (define-ffi-generic ffi-buffer-proxy (buffer)
 + [X] (define-ffi-generic ffi-buffer-download (buffer url)
-+ [ ] (define-ffi-generic ffi-buffer-zoom-level (buffer)
++ [X] (define-ffi-generic ffi-buffer-zoom-level (buffer)
 + [ ] (define-ffi-generic ffi-buffer-get-document (buffer)
 + [ ] (define-ffi-generic ffi-generate-input-event (window event)
 + [ ] (define-ffi-generic ffi-generated-input-event-p (window event)

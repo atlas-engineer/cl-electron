@@ -95,3 +95,19 @@
 (defun web-contents-download-url (id url)
   (send-message
    (format nil "~a.downloadURL(\"~a\")" id url)))
+
+(defun web-contents-set-zoom-factor (id factor)
+  (send-message
+   (format nil "~a.setZoomFactor(\"~f\")" id factor)))
+
+(defun web-contents-get-zoom-factor (id)
+  (send-message
+   (format nil "~a.getZoomFactor()" id)))
+
+(defun web-contents-set-zoom-level (id level)
+  (send-message
+   (format nil "~a.setZoomLevel(~a)" id level)))
+
+(defun web-contents-get-zoom-level (id)
+  (send-message
+   (format nil "~a.getZoomLevel()" id)))
