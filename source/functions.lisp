@@ -44,7 +44,7 @@
 
 (defun window-set-title (id title)
   (send-message
-   (format nil "~a.setTitle(~a)" id title)))
+   (format nil "~a.setTitle(\"~a\")" id title)))
 
 (defun window-active (id)
   (send-message
@@ -53,3 +53,7 @@
 (defun window-set-active (id)
   (send-message
    (format nil "~a.focus()" id)))
+
+(defun window-set-background-color (id color)
+  (send-message
+   (format nil "~a.setBackgroundColor(\"~a\")" id color)))
