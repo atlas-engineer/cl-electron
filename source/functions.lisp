@@ -131,3 +131,15 @@
 (defun web-contents-get-user-agent (id)
   (send-message
    (format nil "~a.getUserAgent()" id)))
+
+(defun web-contents-load-url (id url)
+  (send-message
+   (format nil "~a.loadURL(\"~a\")" id url)))
+
+(defun web-contents-open-dev-tools (id)
+  (send-message
+   (format nil "~a.openDevTools()" id)))
+
+(defun web-contents-close-dev-tools (id)
+  (send-message
+   (format nil "~a.closeDevTools()" id)))
