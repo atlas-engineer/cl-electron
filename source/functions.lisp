@@ -160,6 +160,14 @@
   (send-message
    (format nil "~a.isFocused()" id)))
 
+(defun web-contents-undo (id)
+  (send-message
+   (format nil "~a.undo()" id)))
+
+(defun web-contents-redo (id)
+  (send-message
+   (format nil "~a.redo()" id)))
+
 (defun web-contents-session (id)
   (let ((new-id (new-id)))
     (send-message

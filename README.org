@@ -39,7 +39,7 @@ the distribution terms of the third-party dependencies for details.
 + [X] (define-ffi-generic ffi-focus-prompt-buffer (window prompt-buffer)
 + [ ] (define-ffi-generic ffi-height (object)
 + [ ] (define-ffi-generic ffi-width (object)
-+ [ ] (define-ffi-generic ffi-buffer-make (buffer)
++ [X] (define-ffi-generic ffi-buffer-make (buffer)
 + [ ] (define-ffi-generic ffi-buffer-delete (buffer)
 + [X] (define-ffi-generic ffi-buffer-load (buffer url)
 + [ ] (define-ffi-generic ffi-buffer-load-html (buffer html-content url)
@@ -80,8 +80,8 @@ the distribution terms of the third-party dependencies for details.
 + [ ] (define-ffi-generic ffi-buffer-paste (buffer &optional text)
 + [ ] (define-ffi-generic ffi-buffer-cut (buffer)
 + [ ] (define-ffi-generic ffi-buffer-select-all (buffer)
-+ [ ] (define-ffi-generic ffi-buffer-undo (buffer)
-+ [ ] (define-ffi-generic ffi-buffer-redo (buffer)
++ [X] (define-ffi-generic ffi-buffer-undo (buffer)
++ [X] (define-ffi-generic ffi-buffer-redo (buffer)
 + [ ] (define-ffi-generic ffi-add-context-menu-command (command label)
 
 https://github.com/Jelmerro/Vieb
