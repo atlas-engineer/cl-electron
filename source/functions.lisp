@@ -85,3 +85,13 @@
            (if height "true" "false")
            (if horizontal "true" "false")
            (if vertical "true" "false"))))
+
+(defun browser-view-get-web-contents (id)
+  (let ((new-id (new-id)))
+    (send-message
+     (format nil "~a = ~a.webContents" new-id id))
+    new-id))
+
+(defun web-contents-download-url (id url)
+  (send-message
+   (format nil "~a.downloadURL(\"~a\")" id url)))

@@ -59,7 +59,7 @@ the distribution terms of the third-party dependencies for details.
 + [ ] (define-ffi-generic ffi-buffer-sound-enabled-p (buffer)
 + [ ] (define-ffi-generic ffi-buffer-user-agent (buffer)
 + [ ] (define-ffi-generic ffi-buffer-proxy (buffer)
-+ [ ] (define-ffi-generic ffi-buffer-download (buffer url)
++ [X] (define-ffi-generic ffi-buffer-download (buffer url)
 + [ ] (define-ffi-generic ffi-buffer-zoom-level (buffer)
 + [ ] (define-ffi-generic ffi-buffer-get-document (buffer)
 + [ ] (define-ffi-generic ffi-generate-input-event (window event)
@@ -83,3 +83,5 @@ the distribution terms of the third-party dependencies for details.
 + [ ] (define-ffi-generic ffi-buffer-undo (buffer)
 + [ ] (define-ffi-generic ffi-buffer-redo (buffer)
 + [ ] (define-ffi-generic ffi-add-context-menu-command (command label)
+
+https://github.com/Jelmerro/Vieb
