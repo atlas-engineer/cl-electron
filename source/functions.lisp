@@ -12,7 +12,7 @@
   "Generate a new unique ID."
   (symbol-name (gensym "ID")))
 
-(defun browser-window-make ()
+(defun browser-window-new ()
   (let ((id (new-id)))
     (send-message
      (format nil "~a = new BrowserWindow({})" id))
@@ -61,3 +61,27 @@
 (defun browser-window-set-url (id url)
   (send-message
    (format nil "~a.loadURL(\"~a\")" id url)))
+
+(defun browser-view-new ()
+  (let ((id (new-id)))
+    (send-message
+     (format nil "~a = new BrowserView({})" id))
+    id))
+
+(defun browser-view-set-bounds (id x y width height)
+  (send-message
+   (format nil "~a.setBounds({x: ~a, y: ~a, width: ~a, height: ~a})"
+           id x y width height)))
+
+(defun browser-view-get-bounds (id)
+  (send-message
+   (format nil "~a.getBounds()" id)))
+
+(defun browser-view-set-auto-resize (id width height horizontal vertical)
+  (send-message
+   (format nil "~a.setAutoResize({width: ~a, height: ~a, horizontal: ~a, vertical: ~a})"
+           id
+           (if width "true" "false")
+           (if height "true" "false")
+           (if horizontal "true" "false")
+           (if vertical "true" "false"))))
