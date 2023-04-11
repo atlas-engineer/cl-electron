@@ -18,7 +18,7 @@
      (format nil "~a = new BrowserWindow({})" id))
     id))
 
-(defun browser-window-delete (id)
+(defun browser-window-close (id)
   (send-message
    (format nil "~a.close()" id)))
 
@@ -38,7 +38,7 @@
   (send-message
    (format nil "~a.unmaximize()" id)))
 
-(defun browser-window-title (id)
+(defun browser-window-get-title (id)
   (send-message
    (format nil "~a.getTitle()" id)))
 
@@ -46,11 +46,11 @@
   (send-message
    (format nil "~a.setTitle(\"~a\")" id title)))
 
-(defun browser-window-active (id)
+(defun browser-window-is-focused (id)
   (send-message
    (format nil "~a.isFocused()" id)))
 
-(defun browser-window-set-active (id)
+(defun browser-window-focus (id)
   (send-message
    (format nil "~a.focus()" id)))
 
@@ -58,7 +58,7 @@
   (send-message
    (format nil "~a.setBackgroundColor(\"~a\")" id color)))
 
-(defun browser-window-set-url (id url)
+(defun browser-window-load-url (id url)
   (send-message
    (format nil "~a.loadURL(\"~a\")" id url)))
 
@@ -112,7 +112,7 @@
   (send-message
    (format nil "~a.getZoomLevel()" id)))
 
-(defun web-contents-set-muted (id muted)
+(defun web-contents-set-audio-muted (id muted)
   (send-message
    (format nil "~a.setAudioMuted(~a)"
            id
