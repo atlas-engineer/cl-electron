@@ -57,3 +57,7 @@
 (defun window-set-background-color (id color)
   (send-message
    (format nil "~a.setBackgroundColor(\"~a\")" id color)))
+
+(defun window-set-url (id url)
+  (send-message
+   (format nil "~a.loadURL(\"~a\")" id url)))
