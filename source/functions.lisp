@@ -152,6 +152,14 @@
   (send-message
    (format nil "~a.getTitle()" id)))
 
+(defun web-contents-focus (id)
+  (send-message
+   (format nil "~a.focus()" id)))
+
+(defun web-contents-is-focused (id)
+  (send-message
+   (format nil "~a.isFocused()" id)))
+
 (defun web-contents-session (id)
   (let ((new-id (new-id)))
     (send-message
