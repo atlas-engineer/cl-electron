@@ -83,4 +83,3 @@ the distribution terms of the third-party dependencies for details.
 + [ ] (define-ffi-generic ffi-buffer-undo (buffer)
 + [ ] (define-ffi-generic ffi-buffer-redo (buffer)
 + [ ] (define-ffi-generic ffi-add-context-menu-command (command label)
-+ [ ] (define-ffi-generic ffi-web-extension-send-message (buffer javascript
