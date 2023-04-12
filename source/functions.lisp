@@ -148,6 +148,10 @@
   (send-message
    (format nil "~a.loadURL(\"~a\")" id url)))
 
+(defun web-contents-load-file (id path)
+  (send-message
+   (format nil "~a.loadFile(\"~a\")" id path)))
+
 (defun web-contents-get-url (id)
   (send-message
    (format nil "~a.getURL()" id)))
