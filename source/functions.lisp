@@ -200,6 +200,10 @@
   (send-message
    (format nil "~a.selectAll()" id)))
 
+(defun web-contents-close (id)
+  (send-message
+   (format nil "~a.close()" id)))
+
 (defun web-contents-session (id)
   (let ((new-id (new-id)))
     (send-message

@@ -40,7 +40,7 @@ the distribution terms of the third-party dependencies for details.
 + [ ] (define-ffi-generic ffi-height (object)
 + [ ] (define-ffi-generic ffi-width (object)
 + [X] (define-ffi-generic ffi-buffer-make (buffer)
-+ [ ] (define-ffi-generic ffi-buffer-delete (buffer)
++ [X] (define-ffi-generic ffi-buffer-delete (buffer)
 + [X] (define-ffi-generic ffi-buffer-load (buffer url)
 + [X] (define-ffi-generic ffi-buffer-load-html (buffer html-content url)
 + [X] (define-ffi-generic ffi-buffer-load-alternate-html (buffer html-content content-url url)
