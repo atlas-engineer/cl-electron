@@ -62,6 +62,22 @@
   (send-message
    (format nil "~a.loadURL(\"~a\")" id url)))
 
+(defun browser-window-add-browser-view (browser-window-id browser-view-id)
+  (send-message
+   (format nil "~a.addBrowserView(~a)"
+           browser-window-id
+           browser-view-id)))
+
+(defun browser-window-remove-browser-view (browser-window-id browser-view-id)
+  (send-message
+   (format nil "~a.removeBrowserView(~a)"
+           browser-window-id
+           browser-view-id)))
+
+(defun browser-window-get-browser-views (id)
+  (send-message
+   (format nil "~a.getBrowserViews(~a)" id)))
+
 (defun browser-view-new ()
   (let ((id (new-id)))
     (send-message
