@@ -42,27 +42,46 @@ the distribution terms of the third-party dependencies for details.
 + [X] (define-ffi-generic ffi-buffer-make (buffer)
 + [X] (define-ffi-generic ffi-buffer-delete (buffer)
 + [X] (define-ffi-generic ffi-buffer-load (buffer url)
-+ [X] (define-ffi-generic ffi-buffer-load-html (buffer html-content url)
-+ [X] (define-ffi-generic ffi-buffer-load-alternate-html (buffer html-content content-url url)
++ [-] (define-ffi-generic ffi-buffer-load-html (buffer html-content
+  url)
+  + Can use =web-contents-load-file= as a workaround. Will have to
+    create temporary files.
++ [-] (define-ffi-generic ffi-buffer-load-alternate-html (buffer
+  html-content content-url url)
+    + Can use =web-contents-load-file= as a workaround. Will have to
+    create temporary files.
 + [ ] (define-ffi-generic ffi-buffer-evaluate-javascript (buffer javascript &optional world-name)
 + [ ] (define-ffi-generic ffi-buffer-evaluate-javascript-async (buffer javascript &optional world-name)
 + [X] (define-ffi-generic ffi-buffer-add-user-style (buffer style)
 + [X] (define-ffi-generic ffi-buffer-remove-user-style (buffer style)
 + [ ] (define-ffi-generic ffi-buffer-add-user-script (buffer user-script)
 + [ ] (define-ffi-generic ffi-buffer-remove-user-script (buffer script)
-+ [X] (define-ffi-generic ffi-buffer-javascript-enabled-p (buffer)
++ [-] (define-ffi-generic ffi-buffer-javascript-enabled-p (buffer)
+  + JavaScript can be disabled, but only at buffer creation time.
+  + One will have to keep track of if JavaScript is enabled.
 + [ ] (define-ffi-generic ffi-buffer-javascript-markup-enabled-p (buffer)
-+ [*] (define-ffi-generic ffi-buffer-smooth-scrolling-enabled-p (buffer)
-+ [*] (define-ffi-generic ffi-buffer-media-enabled-p (buffer)
-+ [X] (define-ffi-generic ffi-buffer-webgl-enabled-p (buffer)
-+ [X] (define-ffi-generic ffi-buffer-auto-load-image-enabled-p (buffer)
++ [-] (define-ffi-generic ffi-buffer-smooth-scrolling-enabled-p
+  (buffer)
+  + There is not a smooth scrolling option in electron.
++ [-] (define-ffi-generic ffi-buffer-media-enabled-p (buffer)
+  + One cannot enable/disable media in electron.
++ [-] (define-ffi-generic ffi-buffer-webgl-enabled-p (buffer)
+  + WebGL can be disabled, but only at buffer creation time.
+  + One will have to keep track of if WebGL is enabled.
++ [-] (define-ffi-generic ffi-buffer-auto-load-image-enabled-p
+  (buffer)
+  + Images can be disabled, but only at buffer creation time.
+  + One will have to keep track of if images are enabled.
 + [X] (define-ffi-generic ffi-buffer-sound-enabled-p (buffer)
-+ [*] (define-ffi-generic ffi-buffer-proxy (buffer)
++ [-] (define-ffi-generic ffi-buffer-proxy (buffer)
+  + One cannot set the proxy in electron.
 + [X] (define-ffi-generic ffi-buffer-user-agent (buffer)
 + [X] (define-ffi-generic ffi-buffer-download (buffer url)
 + [X] (define-ffi-generic ffi-buffer-zoom-level (buffer)
 + [X] (define-ffi-generic ffi-muted-p (buffer)
-+ [*] (define-ffi-generic ffi-buffer-get-document (buffer)
++ [-] (define-ffi-generic ffi-buffer-get-document (buffer)
+  + There is no way to do this directly, but you can use JavaScript as
+    a workaround.
 + [ ] (define-ffi-generic ffi-generate-input-event (window event)
 + [ ] (define-ffi-generic ffi-generated-input-event-p (window event)
 + [ ] (define-ffi-generic ffi-within-renderer-thread (browser thunk)
@@ -72,10 +91,14 @@ the distribution terms of the third-party dependencies for details.
 + [X] (define-ffi-generic ffi-print-status (window text)
 + [X] (define-ffi-generic ffi-print-message (window message)
 + [X] (define-ffi-generic ffi-display-url (browser url)
-+ [ ] (define-ffi-generic ffi-buffer-cookie-policy (buffer)
-+ [X] (define-ffi-generic ffi-preferred-languages (buffer)
++ [-] (define-ffi-generic ffi-buffer-cookie-policy (buffer)
+  + It is impossible to set the cookie policy in electron.
++ [-] (define-ffi-generic ffi-preferred-languages (buffer)
+  + It is impossible to set the preferred languages in electron
+    outside of startup.
 + [X] (define-ffi-generic ffi-focused-p (buffer)
-+ [X] (define-ffi-generic ffi-tracking-prevention (buffer)
++ [-] (define-ffi-generic ffi-tracking-prevention (buffer)
+  + There is no tracking prevention in electron.
 + [X] (define-ffi-generic ffi-buffer-copy (buffer &optional text)
 + [X] (define-ffi-generic ffi-buffer-paste (buffer &optional text)
 + [X] (define-ffi-generic ffi-buffer-cut (buffer)
