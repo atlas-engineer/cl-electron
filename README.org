@@ -73,7 +73,7 @@ the distribution terms of the third-party dependencies for details.
 + [X] (define-ffi-generic ffi-print-message (window message)
 + [X] (define-ffi-generic ffi-display-url (browser url)
 + [ ] (define-ffi-generic ffi-buffer-cookie-policy (buffer)
-+ [ ] (define-ffi-generic ffi-preferred-languages (buffer)
++ [X] (define-ffi-generic ffi-preferred-languages (buffer)
 + [X] (define-ffi-generic ffi-focused-p (buffer)
 + [X] (define-ffi-generic ffi-tracking-prevention (buffer)
 + [X] (define-ffi-generic ffi-buffer-copy (buffer &optional text)
