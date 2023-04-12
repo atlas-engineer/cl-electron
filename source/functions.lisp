@@ -58,10 +58,6 @@
   (send-message
    (format nil "~a.setBackgroundColor(\"~a\")" id color)))
 
-(defun browser-window-load-url (id url)
-  (send-message
-   (format nil "~a.loadURL(\"~a\")" id url)))
-
 (defun browser-window-add-browser-view (browser-window-id browser-view-id)
   (send-message
    (format nil "~a.addBrowserView(~a)"
