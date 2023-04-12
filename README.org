@@ -15,7 +15,7 @@ Assuming you have [Quicklisp] installed, do
 3. > (ql:quickload :cl-electron)
 
 ** Copying
-cl-webkit is distributed under the BSD license.
+cl-electron is distributed under the BSD license.
 
 Please note that this licence only covers the binding itself. Refer to
 the distribution terms of the third-party dependencies for details.
