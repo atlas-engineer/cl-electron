@@ -12,10 +12,10 @@
   "Generate a new unique ID."
   (symbol-name (gensym "ID")))
 
-(defun browser-window-new ()
+(defun browser-window-new (&key (options ""))
   (let ((id (new-id)))
     (send-message
-     (format nil "~a = new BrowserWindow({})" id))
+     (format nil "~a = new BrowserWindow(~a)" id options))
     id))
 
 (defun browser-window-close (id)
@@ -84,10 +84,10 @@
   (send-message
    (format nil "~a.getBrowserViews()" id)))
 
-(defun browser-view-new ()
+(defun browser-view-new ((&key (options "")))
   (let ((id (new-id)))
     (send-message
-     (format nil "~a = new BrowserView({})" id))
+     (format nil "~a = new BrowserView(~a)" id options))
     id))
 
 (defun browser-view-set-bounds (id x y width height)
