@@ -54,6 +54,16 @@
   (send-message
    (format nil "~a.focus()" id)))
 
+(defun browser-window-get-bounds (id)
+  (let ((new-id (new-id)))
+    (send-message
+     (format nil "~a = ~a.getBounds()" new-id id))))
+
+(defun browser-window-set-bounds (id x y width height)
+  (send-message
+   (format nil "~a.setBounds({x: ~a, y: ~a, width: ~a, height: ~a})"
+           id x y width height)))
+
 (defun browser-window-set-background-color (id color)
   (send-message
    (format nil "~a.setBackgroundColor(\"~a\")" id color)))
@@ -72,7 +82,7 @@
 
 (defun browser-window-get-browser-views (id)
   (send-message
-   (format nil "~a.getBrowserViews(~a)" id)))
+   (format nil "~a.getBrowserViews()" id)))
 
 (defun browser-view-new ()
   (let ((id (new-id)))
