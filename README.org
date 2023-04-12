@@ -75,7 +75,7 @@ the distribution terms of the third-party dependencies for details.
 + [ ] (define-ffi-generic ffi-buffer-cookie-policy (buffer)
 + [ ] (define-ffi-generic ffi-preferred-languages (buffer)
 + [X] (define-ffi-generic ffi-focused-p (buffer)
-+ [ ] (define-ffi-generic ffi-tracking-prevention (buffer)
++ [X] (define-ffi-generic ffi-tracking-prevention (buffer)
 + [X] (define-ffi-generic ffi-buffer-copy (buffer &optional text)
 + [X] (define-ffi-generic ffi-buffer-paste (buffer &optional text)
 + [X] (define-ffi-generic ffi-buffer-cut (buffer)
