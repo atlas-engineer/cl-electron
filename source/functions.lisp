@@ -214,6 +214,14 @@
   (send-message
    (format nil "~a.close()" id)))
 
+(defun web-contents-insert-css (id css)
+  (send-message
+   (format nil "~a.insertCSS(\"~a\")" id css)))
+
+(defun web-contents-remove-inserted-css (id key)
+  (send-message
+   (format nil "~a.removeInsertedCSS(\"~a\")" id key)))
+
 (defun web-contents-session (id)
   (let ((new-id (new-id)))
     (send-message
