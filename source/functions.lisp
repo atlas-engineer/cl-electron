@@ -1,34 +1,5 @@
 (in-package :cl-electron)
 
-(defun browser-view-new (&key (options ""))
-  (let ((id (new-id)))
-    (send-message
-     (format nil "~a = new BrowserView(~a)" id options))
-    id))
-
-(defun browser-view-set-bounds (id x y width height)
-  (send-message
-   (format nil "~a.setBounds({x: ~a, y: ~a, width: ~a, height: ~a})"
-           id x y width height)))
-
-(defun browser-view-get-bounds (id)
-  (send-message
-   (format nil "~a.getBounds()" id)))
-
-(defun browser-view-set-auto-resize (id width height horizontal vertical)
-  (send-message
-   (format nil "~a.setAutoResize({width: ~a, height: ~a, horizontal: ~a, vertical: ~a})"
-           id
-           (if width "true" "false")
-           (if height "true" "false")
-           (if horizontal "true" "false")
-           (if vertical "true" "false"))))
-
-(defun browser-view-web-contents (id)
-  (let ((new-id (new-id)))
-    (send-message
-     (format nil "~a = ~a.webContents" new-id id))
-    new-id))
 
 (defun web-contents-download-url (id url)
   (send-message
