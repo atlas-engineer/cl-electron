@@ -12,6 +12,7 @@
                 :components
                 ((:file "package")
                  (:file "global" :depends-on ("package"))
-                 (:file "initialize" :depends-on ("package"))
-                 (:file "functions" :depends-on ("global")))))
+                 (:file "core" :depends-on ("package" "global"))
+                 (:file "browser-window" :depends-on ("package" "core"))
+                 (:file "functions" :depends-on ("package" "core")))))
   :description "Common Lisp interface to Electron.")
