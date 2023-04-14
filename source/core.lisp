@@ -2,7 +2,9 @@
 
 (defun launch ()
   (setf *electron-process*
-        (uiop:launch-program (list "electron" "start.js"))))
+        (uiop:launch-program (list "electron" (uiop:native-namestring
+                                               (asdf:system-relative-pathname
+                                                :cl-electron "source/start.js"))))))
 
 (defun terminate ()
   (when (uiop:process-alive-p *electron-process*)
