@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require('electron')
+const { app, ipcMain, BrowserWindow } = require('electron')
 const path = require('path')
 const net = require('net');
 
@@ -29,3 +29,18 @@ const server = net.createServer((socket) => {
 server.listen(3000, () => {
     console.log('Server listening on port 3000');
 });
+
+// before-input-event
+// https://www.electronjs.org/docs/latest/tutorial/keyboard-shortcuts
+
+app.whenReady().then(() => {
+  const win = new BrowserWindow({ width: 800, height: 600 })
+
+    win.loadURL('https://atlas.engineer')
+  win.webContents.on('before-input-event', (event, input) => {
+    if (input.control && input.key.toLowerCase() === 'i') {
+      console.log('Pressed Control+I')
+      event.preventDefault()
+    }
+  })
+})
