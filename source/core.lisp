@@ -4,18 +4,19 @@
   (setf *electron-process*
         (uiop:launch-program (list "electron" (uiop:native-namestring
                                                (asdf:system-relative-pathname
-                                                :cl-electron "source/start.js"))))))
+                                                :cl-electron "source/start.js")))))
+  (let* ((us (usocket:socket-connect *host* *port*))
+         (st (usocket:socket-stream us)))
+    (setf *socket-stream* st)))
 
 (defun terminate ()
   (when (uiop:process-alive-p *electron-process*)
     (uiop:terminate-process *electron-process*)))
 
 (defun send-message (message)
-  (let* ((us (usocket:socket-connect *host* *port*))
-         (st (usocket:socket-stream us)))
-    (write-line message st)
-    (finish-output st)
-    (read-line st)))
+  (write-line message *socket-stream*)
+  (finish-output *socket-stream*)
+  (read-line *socket-stream*))
 
 (defun new-id ()
   "Generate a new unique ID."

@@ -4,3 +4,4 @@
 (defvar *port* 3000)
 (defvar *script* (uiop:read-file-string (asdf:system-relative-pathname :cl-electron "source/start.js")))
 (defvar *electron-process* nil)
+(defvar *socket-stream*)

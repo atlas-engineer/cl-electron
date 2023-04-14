@@ -7,7 +7,8 @@
   :license ""
   :depends-on (:uiop
                :usocket
-               :parenscript)
+               :parenscript
+               :bordeaux-threads)
   :components ((:module "source"
                 :components
                 ((:file "package")
