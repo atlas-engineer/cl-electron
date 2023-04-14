@@ -107,4 +107,3 @@ the distribution terms of the third-party dependencies for details.
 + [X] (define-ffi-generic ffi-buffer-redo (buffer)
 + [ ] (define-ffi-generic ffi-add-context-menu-command (command label)
 
-https://github.com/Jelmerro/Vieb
