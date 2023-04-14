@@ -74,3 +74,9 @@
 (defmethod get-browser-views ((browser-window browser-window))
   (send-message
    (format nil "~a.getBrowserViews()" (remote-symbol browser-window))))
+
+(defmethod web-contents ((browser-window browser-window))
+  (let ((new-id (new-id)))
+    (send-message
+     (format nil "~a = ~a.webContents" new-id (remote-symbol browser-window)))
+    new-id)  )
