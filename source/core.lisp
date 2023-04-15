@@ -5,9 +5,12 @@
         (uiop:launch-program (list "electron" (uiop:native-namestring
                                                (asdf:system-relative-pathname
                                                 :cl-electron "source/start.js")))))
-  (let* ((us (usocket:socket-connect *host* *port*))
-         (st (usocket:socket-stream us)))
-    (setf *socket-stream* st)))
+  (loop until
+           (handler-case
+               (let* ((us (usocket:socket-connect *host* *port*))
+                      (st (usocket:socket-stream us)))
+                 (setf *socket-stream* st))
+             (usocket:connection-refused-error ()))))
 
 (defun terminate ()
   (when (uiop:process-alive-p *electron-process*)
