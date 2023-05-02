@@ -4,8 +4,8 @@
  cl-electron is a binding to electron for Common Lisp.
 
 ** Dependencies
-- A working installation of Electron.
-- A Common Lisp.
+- Electron.
+- Common Lisp.
 
 ** Installation
 Assuming you have [Quicklisp] installed, do
