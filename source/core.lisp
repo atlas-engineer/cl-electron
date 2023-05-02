@@ -1,16 +1,28 @@
 (in-package :cl-electron)
 
 (defun launch ()
-  (setf *electron-process*
-        (uiop:launch-program (list "electron" (uiop:native-namestring
-                                               (asdf:system-relative-pathname
-                                                :cl-electron "source/start.js")))))
+  (unless *electron-process*
+    (setf *electron-process*
+          (uiop:launch-program (list "electron" (uiop:native-namestring
+                                                 (asdf:system-relative-pathname
+                                                  :cl-electron "source/start.js"))))))
   (loop until
            (handler-case
                (let* ((us (usocket:socket-connect *host* *port*))
                       (st (usocket:socket-stream us)))
                  (setf *socket-stream* st))
-             (usocket:connection-refused-error ()))))
+             (usocket:connection-refused-error ())))
+  (bordeaux-threads:make-thread (lambda ()
+                                  (create-server 3001))))
+
+(defun create-server (port)
+  (let* ((socket (usocket:socket-listen "127.0.0.1" port))
+	 (connection (usocket:socket-accept socket :element-type 'character))
+         (stream (usocket:socket-stream connection)))
+    (unwind-protect
+         (loop (print (read-line stream)))
+      (usocket:socket-close connection)
+      (usocket:socket-close socket))))
 
 (defun terminate ()
   (when (uiop:process-alive-p *electron-process*)
