@@ -20,7 +20,10 @@
 	 (connection (usocket:socket-accept socket :element-type 'character))
          (stream (usocket:socket-stream connection)))
     (unwind-protect
-         (loop (print (read-line stream)))
+         (handler-case (loop (print (read-line stream)))
+           (end-of-file ()
+             (usocket:socket-close connection)
+             (usocket:socket-close socket)))
       (usocket:socket-close connection)
       (usocket:socket-close socket))))
 
