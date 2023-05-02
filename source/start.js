@@ -3,24 +3,16 @@ const path = require('path')
 const net = require('net');
 
 const server = net.createServer((socket) => {
-    console.log('Client connected');
     socket.on('data', (data) => {
         try {
             const result = eval(data.toString());
-            console.log('Result:', result);
             socket.write(`${result}\n`);
         } catch (err) {
-            console.log('Error:', err);
             socket.write(`${err}\n`);
         }
     });
-    socket.on('close', () => {
-        console.log('Client disconnected');
-    });
 });
-server.listen(3000, () => {
-    console.log('Server listening on port 3000');
-});
+server.listen(3000);
 
 app.whenReady().then(() => {
     const win = new BrowserWindow({ width: 800, height: 600 })
