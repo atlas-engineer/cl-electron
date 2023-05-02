@@ -29,7 +29,8 @@
 
 (defun terminate ()
   (when (uiop:process-alive-p *electron-process*)
-    (uiop:terminate-process *electron-process*)))
+    (uiop:terminate-process *electron-process*)
+    (setf *electron-process* nil)))
 
 (defun send-message (message)
   (write-line message *socket-stream*)
