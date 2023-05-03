@@ -1,6 +1,7 @@
 const { app, ipcMain, BrowserWindow } = require('electron')
 const path = require('path')
 const net = require('net');
+client = new net.Socket();
 
 ////////////
 // Server //
@@ -20,18 +21,6 @@ server.listen(3000);
 ////////////
 // Client //
 ////////////
-const socket = new net.Socket();
-socket.connect(3001, 'localhost', () => {
-    socket.setNoDelay(true);
+client.connect(3001, 'localhost', () => {
+    client.setNoDelay(true);
 });
-
-app.whenReady().then(() => {
-    const win = new BrowserWindow({ width: 800, height: 600 })
-    win.loadURL('https://atlas.engineer')
-    win.webContents.on('before-input-event', (event, input) => {
-        if (input.control && input.key.toLowerCase() === 'i') {
-            socket.write('Hello, server!\n');
-            event.preventDefault()
-        }
-    })
-})

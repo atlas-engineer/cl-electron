@@ -20,6 +20,18 @@ cl-electron is distributed under the BSD license.
 Please note that this licence only covers the binding itself. Refer to
 the distribution terms of the third-party dependencies for details.
 
+** Running example
+Below we'll launch =cl-electron= and create a window that handles on
+key press events.
+
+#+NAME: running example
+#+BEGIN_SRC lisp
+  (launch) ;; launch cl-electron
+  (register-before-input-event
+   (make-instance 'browser-window)
+   (lambda (browser-window input) (print input)))
+#+END_SRC
+
 ** Functions
 + [X] (define-ffi-generic ffi-window-make (browser)
 + [X] (define-ffi-generic ffi-window-delete (window)

@@ -6,6 +6,7 @@
   :author "Atlas Engineer"
   :license ""
   :depends-on (:uiop
+               :cl-json
                :usocket
                :parenscript
                :bordeaux-threads)

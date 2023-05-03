@@ -5,3 +5,4 @@
 (defvar *script* (uiop:read-file-string (asdf:system-relative-pathname :cl-electron "source/start.js")))
 (defvar *electron-process* nil)
 (defvar *socket-stream*)
+(defvar *callbacks* (make-hash-table))

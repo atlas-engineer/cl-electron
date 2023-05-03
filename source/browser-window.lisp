@@ -5,9 +5,27 @@
 
 (defmethod initialize-instance :after ((browser-window browser-window) &key (options ""))
   (send-message
-   (format nil "~a = new BrowserWindow(~a)"
+   (format nil "~a = new BrowserWindow(~a);"
            (remote-symbol browser-window)
-           options)))
+           options))
+  ;; We load about blank to initialize the web context (this is a renderer bug).
+  (send-message
+   (format nil "~a.loadURL('about:blank')"
+           (remote-symbol browser-window))))
+
+(defmethod register-before-input-event ((browser-window browser-window) lambda)
+  (let ((identifier (new-integer-id)))
+    (setf (gethash identifier *callbacks*)
+          (lambda (arguments-list)
+            (apply lambda (cons browser-window arguments-list))))
+    (send-message
+     (format nil
+             "~a.webContents.on('before-input-event', (event, input) => {
+               jsonString = JSON.stringify({ callback: ~a, input: input });
+               client.write(`${jsonString} \\\n`);
+               event.preventDefault();})"
+             (remote-symbol browser-window)
+             identifier))))
 
 (defmethod kill ((browser-window browser-window))
   (send-message

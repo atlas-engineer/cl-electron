@@ -20,12 +20,22 @@
 	 (connection (usocket:socket-accept socket :element-type 'character))
          (stream (usocket:socket-stream connection)))
     (unwind-protect
-         (handler-case (loop (print (read-line stream)))
+         (handler-case
+             (loop
+               (dispatch-callback (read-line stream)))
            (end-of-file ()
              (usocket:socket-close connection)
              (usocket:socket-close socket)))
       (usocket:socket-close connection)
       (usocket:socket-close socket))))
+
+(defun dispatch-callback (json-string)
+  "Handle the callback."
+  (let* ((decoded-object (cl-json:decode-json-from-string json-string))
+         (callback-id (cdar decoded-object))
+         (callback (gethash callback-id *callbacks*))
+         (arguments-list (cdr decoded-object)))
+    (funcall callback arguments-list)))
 
 (defun terminate ()
   (when (uiop:process-alive-p *electron-process*)
@@ -40,6 +50,10 @@
 (defun new-id ()
   "Generate a new unique ID."
   (symbol-name (gensym "ID")))
+
+(defun new-integer-id ()
+  "Generate a new unique ID."
+  (parse-integer (symbol-name (gensym ""))))
 
 (defclass remote-object ()
   ((remote-symbol :accessor remote-symbol
