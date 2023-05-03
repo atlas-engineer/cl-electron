@@ -1,3 +1,5 @@
+;;;; Electron browser-window object definition and methods.
+
 (in-package :cl-electron)
 
 (defclass browser-window (remote-object)

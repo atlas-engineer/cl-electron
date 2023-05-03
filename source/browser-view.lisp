@@ -1,3 +1,5 @@
+;;;; Electron browser-view object definition and methods.
+
 (in-package :cl-electron)
 
 (defclass browser-view (remote-object)

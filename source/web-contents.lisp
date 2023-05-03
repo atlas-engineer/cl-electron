@@ -1,3 +1,5 @@
+;;;; Electron web-contents object definition and methods.
+
 (in-package :cl-electron)
 
 (defclass web-contents (remote-object)

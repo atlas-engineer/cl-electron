@@ -1,3 +1,6 @@
+;;;; Functions for starting, killing, and communication with the
+;;;; electron process.
+
 (in-package :cl-electron)
 
 (defun launch ()

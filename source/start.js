@@ -1,3 +1,7 @@
+/////////////////////////////////////////////////////////////
+// Start a Javascript server that will eval code received. //
+/////////////////////////////////////////////////////////////
+
 const { app, ipcMain, BrowserWindow } = require('electron')
 const path = require('path')
 const net = require('net');
