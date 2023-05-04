@@ -2,9 +2,6 @@
 
 (in-package :cl-electron)
 
-(defclass browser-window (remote-object)
-  ())
-
 (defmethod initialize-instance :after ((browser-window browser-window) &key (options ""))
   (send-message
    (format nil "~a = new BrowserWindow(~a);"
@@ -79,17 +76,17 @@
   (send-message
    (format nil "~a.setBackgroundColor(\"~a\")" (remote-symbol browser-window) color)))
 
-(defmethod add-browser-view ((browser-window browser-window) browser-view-id)
+(defmethod add-browser-view ((browser-window browser-window) (browser-view browser-view))
   (send-message
    (format nil "~a.addBrowserView(~a)"
            (remote-symbol browser-window)
-           browser-view-id)))
+           (remote-symbol browser-view))))
 
-(defmethod remove-browser-view ((browser-window browser-window) browser-view-id)
+(defmethod remove-browser-view ((browser-window browser-window) (browser-view browser-view))
   (send-message
    (format nil "~a.removeBrowserView(~a)"
            (remote-symbol browser-window)
-           browser-view-id)))
+           (remote-symbol browser-view))))
 
 (defmethod get-browser-views ((browser-window browser-window))
   (send-message
@@ -99,4 +96,5 @@
   (let ((new-id (new-id)))
     (send-message
      (format nil "~a = ~a.webContents" new-id (remote-symbol browser-window)))
-    new-id)  )
+    (make-instance 'web-contents
+                   :remote-symbol new-id)))

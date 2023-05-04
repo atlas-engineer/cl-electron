@@ -2,9 +2,6 @@
 
 (in-package :cl-electron)
 
-(defclass web-contents (remote-object)
-  ())
-
 (defmethod download-url ((web-contents web-contents) url)
   (send-message
    (format nil "~a.downloadURL(\"~a\")" (remote-symbol web-contents) url)))

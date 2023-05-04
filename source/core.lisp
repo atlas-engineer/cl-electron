@@ -63,3 +63,12 @@
                   :initarg :remote-symbol
                   :initform (new-id)
                   :documentation "The variable name used on the remotely running NodeJS system.")))
+
+(defclass browser-view (remote-object)
+  ())
+
+(defclass browser-window (remote-object)
+  ())
+
+(defclass web-contents (remote-object)
+  ())

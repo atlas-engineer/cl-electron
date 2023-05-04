@@ -2,9 +2,6 @@
 
 (in-package :cl-electron)
 
-(defclass browser-view (remote-object)
-  ())
-
 (defmethod initialize-instance :after ((browser-view browser-view) &key (options ""))
   (send-message
    (format nil "~a = new BrowserView(~a)"
@@ -38,4 +35,5 @@
   (let ((new-id (new-id)))
     (send-message
      (format nil "~a = ~a.webContents" new-id (remote-symbol browser-view)))
-    new-id)  )
+    (make-instance 'web-contents
+                   :remote-symbol new-id)))
