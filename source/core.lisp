@@ -8,7 +8,7 @@
     (setf *electron-process*
           (uiop:launch-program (list "electron" (uiop:native-namestring
                                                  (asdf:system-relative-pathname
-                                                  :cl-electron "source/start.js"))))))
+                                                  :cl-electron "source/server.js"))))))
   (loop until
            (handler-case
                (let* ((us (usocket:socket-connect *host* *port*))
