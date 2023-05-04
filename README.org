@@ -11,8 +11,8 @@
 Assuming you have [Quicklisp] installed, do
 
 1. Clone to =~/common-lisp/quicklisp/local-projects/cl-electron=
-2. > lisp
-3. > (ql:quickload :cl-electron)
+2. => lisp=
+3. => (ql:quickload :cl-electron)=
 
 ** Copying
 cl-electron is distributed under the BSD license.
