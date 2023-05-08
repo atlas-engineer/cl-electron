@@ -26,6 +26,10 @@
              (remote-symbol browser-window)
              identifier))))
 
+(defmethod load-url ((browser-window browser-window) url)
+  (send-message
+   (format nil "~a.loadURL('~a')" (remote-symbol browser-window) url)))
+
 (defmethod kill ((browser-window browser-window))
   (send-message
    (format nil "~a.close()" (remote-symbol browser-window))))
