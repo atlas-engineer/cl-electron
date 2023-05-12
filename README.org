@@ -6,7 +6,7 @@
 
 ** Nix + Quicklisp
 Issuing =nix-shell= at the root of the project starts an environment
-where all dependencies are available expect for the CL libraries.
+where all dependencies are available except for the CL libraries.
 
 If you manage CL libraries by yourself, place them in a directory where
 ASDF finds them (e.g. =~/common-lisp/=).
