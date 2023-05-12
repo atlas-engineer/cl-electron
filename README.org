@@ -1,38 +1,71 @@
-* cl-electron - Electron binding for Common Lisp
+#+TITLE: cl-electron - Electron binding for Common Lisp
 
-** About
- cl-electron is a binding to electron for Common Lisp.
+* Installation
+=cl-electron= depends on Electron, NodeJS, a Common Lisp implementation
+(SBCL) and some CL libraries (consult [[file:cl-electron.asd][cl-electron.asd file]]).
 
-** Dependencies
-- Electron.
-- Common Lisp.
+** Nix + Quicklisp
+Issuing =nix-shell= at the root of the project starts an environment
+where all dependencies are available expect for the CL libraries.
 
-** Installation
-Assuming you have [Quicklisp] installed, do
+If you manage CL libraries by yourself, place them in a directory where
+ASDF finds them (e.g. =~/common-lisp/=).
 
-1. Clone to =~/common-lisp/quicklisp/local-projects/cl-electron=
-2. => lisp=
-3. => (ql:quickload :cl-electron)=
+If you manage Common Lisp dependencies with Quicklisp:
 
-** Copying
-cl-electron is distributed under the BSD license.
+1. Clone the git repository to =~/common-lisp/quicklisp/local-projects/cl-electron=
+2. =sbcl=
+3. =(ql:quickload :cl-electron)=
 
-Please note that this licence only covers the binding itself. Refer to
-the distribution terms of the third-party dependencies for details.
+** Guix
+The official Guix channel doesn't provide Electron.  Packing it from
+source might be a non-trivial task.
 
-** Running example
-Below we'll launch =cl-electron= and create a window that handles on
-key press events.
+Installing Electron as binary is acceptable for non official Guix
+channels, such as [[https://gitlab.com/nonguix/nonguix][nonguix]].  For the time being, an experimental Electron
+package is hosted [[https://gitlab.com/aadcg/nonguix][at a nonguix channel fork]].
 
-#+NAME: running example
-#+BEGIN_SRC lisp
-  (launch) ;; launch cl-electron
-  (register-before-input-event
-   (make-instance 'browser-window)
-   (lambda (browser-window input) (print input)))
-#+END_SRC
+Clone it by issuing =git clone https://gitlab.com/aadcg/nonguix.git=.
 
-** Functions
+Add it as a local Guix channel by editing the file
+=~/.config/guix/channels.scm=, along the lines of the example below.
+
+#+begin_src scheme
+(cons* (channel
+        (name 'nonguix-local)
+        (url "/path/to/nonguix/checkout")
+        (branch "nyxt-electron-wip"))
+       %default-channels)
+#+end_src
+
+At last, issue =guix pull= so that the new Electron package can be
+found.  You need to manually pull from the relevant branch to get
+channel updates.
+
+Once the above preliminaries are complete, start a REPL will all the
+dependencies by issuing:
+
+=guix shell -D -f /path/to/guix.scm -- sbcl=.
+
+*Note:* You need to either (1) add Electron's binary to your PATH,
+located at "/gnu/store/HASH-electron-24.2.0/electron"; (2) patch
+=launch= to set the binary's full path.  This is current limitation of
+the Electron package.
+
+* Example
+In the example below we launch Electron to create a window that handles
+on key press events.
+
+#+begin_src lisp
+(asdf:load-system :cl-electron)
+(in-package :cl-electron)
+(launch)
+(register-before-input-event
+ (make-instance 'browser-window)
+ (lambda (browser-window input) (print input)))
+#+end_src
+
+* Functions
 + [X] (define-ffi-generic ffi-window-make (browser)
 + [X] (define-ffi-generic ffi-window-delete (window)
 + [X] (define-ffi-generic ffi-window-fullscreen (window))
@@ -119,3 +152,8 @@ key press events.
 + [X] (define-ffi-generic ffi-buffer-redo (buffer)
 + [ ] (define-ffi-generic ffi-add-context-menu-command (command label)
 
+* Copying
+cl-electron is distributed under the BSD license.
+
+Please note that this license only covers the binding itself. Refer to
+the distribution terms of the third-party dependencies for details.
