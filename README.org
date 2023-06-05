@@ -18,39 +18,25 @@ If you manage Common Lisp dependencies with Quicklisp:
 3. =(ql:quickload :cl-electron)=
 
 ** Guix
-The official Guix channel doesn't provide Electron.  Packing it from
-source might be a non-trivial task.
-
-Installing Electron as binary is acceptable for non official Guix
-channels, such as [[https://gitlab.com/nonguix/nonguix][nonguix]].  For the time being, an experimental Electron
-package is hosted [[https://gitlab.com/aadcg/nonguix][at a nonguix channel fork]].
-
-Clone it by issuing =git clone https://gitlab.com/aadcg/nonguix.git=.
-
-Add it as a local Guix channel by editing the file
-=~/.config/guix/channels.scm=, along the lines of the example below.
+Electron can only be fetched from the =nonguix= channel.  Add the
+channel by editing the file =~/.config/guix/channels.scm=, according to
+the example below.
 
 #+begin_src scheme
 (cons* (channel
-        (name 'nonguix-local)
-        (url "/path/to/nonguix/checkout")
-        (branch "nyxt-electron-wip"))
+        (name 'nonguix)
+        (url "https://gitlab.com/nonguix/nonguix")
+        (introduction
+         (make-channel-introduction
+          "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
+          (openpgp-fingerprint
+           "2A39 3FFF 68F4 EF7A 3D29  12AF 6F51 20A0 22FB B2D5"))))
        %default-channels)
 #+end_src
 
-At last, issue =guix pull= so that the new Electron package can be
-found.  You need to manually pull from the relevant branch to get
-channel updates.
-
-Once the above preliminaries are complete, start a REPL will all the
-dependencies by issuing:
+Start a REPL will all the dependencies by issuing:
 
 =guix shell -D -f /path/to/guix.scm -- sbcl=.
-
-*Note:* You need to either (1) add Electron's binary to your PATH,
-located at "/gnu/store/HASH-electron-24.2.0/electron"; (2) patch
-=launch= to set the binary's full path.  This is current limitation of
-the Electron package.
 
 * Example
 In the example below we launch Electron to create a window that handles
