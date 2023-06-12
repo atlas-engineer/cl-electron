@@ -10,10 +10,13 @@
   :description "Common Lisp interface to Electron."
   :license "BSD 3-Clause"
   :depends-on (uiop
+               alexandria
                cl-json
-               usocket
+               iolib
+               iolib/os
                parenscript
-               bordeaux-threads)
+               bordeaux-threads
+               trivial-package-local-nicknames)
   :components ((:module "source"
                 :components
                 ((:file "package")
