@@ -1,3 +1,6 @@
+;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
+;;;; SPDX-License-Identifier: BSD-3-Clause
+
 ;;;; Electron browser-window object definition and methods.
 
 (in-package :cl-electron)
