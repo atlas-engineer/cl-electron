@@ -11,7 +11,8 @@
   :license "BSD 3-Clause"
   :depends-on (uiop
                cl-json
-               usocket
+               iolib
+               iolib/os
                parenscript
                bordeaux-threads)
   :components ((:module "source"

@@ -5,6 +5,11 @@
 // Start a Javascript server that will eval code received. //
 /////////////////////////////////////////////////////////////
 
+if (process.argv.length != 4) {
+  console.error('Requires server and client socket paths.');
+  process.exit(1);
+}
+
 const { app, ipcMain, BrowserWindow } = require('electron')
 const path = require('path')
 const net = require('net');
@@ -23,11 +28,11 @@ const server = net.createServer((socket) => {
         }
     });
 });
-server.listen(3000);
+server.listen(process.argv[2]);
 
 ////////////
 // Client //
 ////////////
-client.connect(3001, 'localhost', () => {
+client.connect(process.argv[3], () => {
     client.setNoDelay(true);
 });

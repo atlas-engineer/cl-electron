@@ -6,34 +6,42 @@
 
 (in-package :electron)
 
-(defun launch ()
-  (unless *electron-process*
-    (setf *electron-process*
-          (uiop:launch-program (list "electron" (uiop:native-namestring
-                                                 (asdf:system-relative-pathname
-                                                  :cl-electron "source/server.js"))))))
-  (loop until
-           (handler-case
-               (let* ((us (usocket:socket-connect *host* *port*))
-                      (st (usocket:socket-stream us)))
-                 (setf *socket-stream* st))
-             (usocket:connection-refused-error ())))
-  (bordeaux-threads:make-thread (lambda ()
-                                  (create-server 3001))))
+(defvar *lisp-socket-lock* (bt:make-semaphore :name "electron-lisp-lock"))
 
-(defun create-server (port)
-  (let* ((socket (usocket:socket-listen "127.0.0.1" port))
-	 (connection (usocket:socket-accept socket :element-type 'character))
-         (stream (usocket:socket-stream connection)))
-    (unwind-protect
-         (handler-case
-             (loop
-               (dispatch-callback (read-line stream)))
-           (end-of-file ()
-             (usocket:socket-close connection)
-             (usocket:socket-close socket)))
-      (usocket:socket-close connection)
-      (usocket:socket-close socket))))
+(defun launch ()
+  (bordeaux-threads:make-thread #'create-server)
+  (unless (and *electron-process*
+               (uiop:process-alive-p *electron-process*))
+    (bt:wait-on-semaphore *lisp-socket-lock*)
+    (setf *electron-process*
+          (uiop:launch-program (list "electron"
+                                     (uiop:native-namestring
+                                      (asdf:system-relative-pathname
+                                       :cl-electron "source/server.js"))
+                                     (uiop:native-namestring *electron-socket-path*)
+                                     (uiop:native-namestring *lisp-socket-path*))
+                               :output t
+                               :error-output t))))
+
+(defun create-server ()
+  (unwind-protect
+       (let ((native-socket-path (uiop:native-namestring *lisp-socket-path*)))
+         (iolib:with-open-socket (s :address-family :local
+                                    :connect :passive
+                                    :local-filename native-socket-path)
+           ;; We don't want group members or others to flood the socket or, worse,
+           ;; execute code.
+           (setf (iolib/os:file-permissions native-socket-path)
+                 (set-difference (iolib/os:file-permissions native-socket-path)
+                                 '(:group-read :group-write :group-exec
+                                   :other-read :other-write :other-exec)))
+           (bt:signal-semaphore *lisp-socket-lock*)
+           (loop as connection = (iolib:accept-connection s)
+                 while connection
+                 do (progn
+                      (alex:when-let ((expr (alex:read-stream-content-into-string connection)))
+                        (dispatch-callback expr))))))
+    (uiop:delete-file-if-exists *lisp-socket-path*)))
 
 (defun dispatch-callback (json-string)
   "Handle the callback."
@@ -49,9 +57,12 @@
     (setf *electron-process* nil)))
 
 (defun send-message (message)
-  (write-line message *socket-stream*)
-  (finish-output *socket-stream*)
-  (read-line *socket-stream*))
+  ;; TODO: Keep socket open?  Use `*socket-stream*'.
+  (iolib:with-open-socket (s :address-family :local
+                             :remote-filename (uiop:native-namestring *electron-socket-path*))
+    (write-line message s)
+    (finish-output s)
+    (read-line s)))
 
 (defun new-id ()
   "Generate a new unique ID."
