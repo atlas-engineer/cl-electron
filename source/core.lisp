@@ -9,7 +9,7 @@
 (defvar *lisp-socket-lock* (bt:make-semaphore :name "electron-lisp-lock"))
 
 (defun launch ()
-  (bordeaux-threads:make-thread #'create-server)
+  (setf *lisp-server-process* (bordeaux-threads:make-thread #'create-server))
   (unless (and *electron-process*
                (uiop:process-alive-p *electron-process*))
     (bt:wait-on-semaphore *lisp-socket-lock*)
@@ -53,9 +53,12 @@
     (funcall callback arguments-list)))
 
 (defun terminate ()
-  (when (uiop:process-alive-p *electron-process*)
+  (when (and *electron-process* (uiop:process-alive-p *electron-process*))
     (uiop:terminate-process *electron-process*)
-    (setf *electron-process* nil)))
+    (setf *electron-process* nil))
+  (when (and *lisp-socket-path* (bt:thread-alive-p *lisp-server-process*))
+    (bt:destroy-thread *lisp-server-process*)
+    (uiop:delete-file-if-exists *lisp-socket-path*)))
 
 (defun send-message (message)
   ;; TODO: Keep socket open?  Use `*socket-stream*'.
