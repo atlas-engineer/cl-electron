@@ -39,8 +39,9 @@
            (loop as connection = (iolib:accept-connection s)
                  while connection
                  do (progn
-                      (alex:when-let ((expr (alex:read-stream-content-into-string connection)))
-                        (dispatch-callback expr))))))
+                      (let ((expr (alex:read-stream-content-into-string connection)))
+                        (unless (uiop:emptyp expr)
+                          (dispatch-callback expr)))))))
     (uiop:delete-file-if-exists *lisp-socket-path*)))
 
 (defun dispatch-callback (json-string)
