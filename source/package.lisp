@@ -3,6 +3,6 @@
 
 (in-package :cl-user)
 
-(uiop:define-package #:cl-electron
-  (:nicknames :electron)
+(uiop:define-package #:electron
+    (:nicknames :cl-electron)
   (:use :cl))

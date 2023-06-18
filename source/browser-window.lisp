@@ -3,7 +3,7 @@
 
 ;;;; Electron browser-window object definition and methods.
 
-(in-package :cl-electron)
+(in-package :electron)
 
 (defmethod initialize-instance :after ((browser-window browser-window) &key (options ""))
   (send-message

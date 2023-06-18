@@ -44,7 +44,7 @@ on key press events.
 
 #+begin_src lisp
 (asdf:load-system :cl-electron)
-(in-package :cl-electron)
+(in-package :electron)
 (launch)
 (register-before-input-event
  (make-instance 'browser-window)

@@ -4,7 +4,7 @@
 ;;;; Functions for starting, killing, and communication with the
 ;;;; electron process.
 
-(in-package :cl-electron)
+(in-package :electron)
 
 (defun launch ()
   (unless *electron-process*

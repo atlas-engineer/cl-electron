@@ -3,7 +3,7 @@
 
 ;;;; Electron browser-view object definition and methods.
 
-(in-package :cl-electron)
+(in-package :electron)
 
 (defmethod initialize-instance :after ((browser-view browser-view) &key (options ""))
   (send-message

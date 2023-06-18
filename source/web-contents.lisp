@@ -3,7 +3,7 @@
 
 ;;;; Electron web-contents object definition and methods.
 
-(in-package :cl-electron)
+(in-package :electron)
 
 (defmethod download-url ((web-contents web-contents) url)
   (send-message
