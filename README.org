@@ -43,12 +43,14 @@ In the example below we launch Electron to create a window that handles
 on key press events.
 
 #+begin_src lisp
-(asdf:load-system :cl-electron)
-(in-package :cl-electron)
-(launch)
-(register-before-input-event
- (make-instance 'browser-window)
- (lambda (browser-window input) (print input)))
+  (asdf:load-system :cl-electron)
+  (defvar my-interface (make-instance 'electron:interface
+                                      :electron-socket-path (uiop:xdg-runtime-dir "electron.socket")
+                                      :lisp-socket-path (uiop:xdg-runtime-dir "lisp.socket")))
+  (electron:launch my-interface)
+  (electron::register-before-input-event
+   (make-instance 'electron:browser-window :interface my-interface)
+   (lambda (browser-window input) (print input)))
 #+end_src
 
 * Functions
