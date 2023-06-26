@@ -38,7 +38,7 @@
    (build-system asdf-build-system/sbcl)
    (native-inputs (list cl-lisp-unit2 sbcl))
    (inputs (list electron node
-                 cl-json cl-iolib cl-parenscript cl-bordeaux-threads))
+                 cl-json cl-iolib cl-nclasses cl-parenscript cl-bordeaux-threads))
    (synopsis "Common Lisp interface to Electron")
    (home-page "https://github.com/atlas-engineer/cl-electron")
    (description "@command{cl-electron} is a binding to Electron for

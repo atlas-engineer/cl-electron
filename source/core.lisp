@@ -6,26 +6,56 @@
 
 (in-package :electron)
 
-(defvar *lisp-socket-lock* (bt:make-semaphore :name "electron-lisp-lock"))
+(define-class interface ()
+  ((electron-socket-path
+    (uiop:xdg-runtime-dir "electron.socket")
+    :export t
+    :documentation "The Electron process listens to this sockets to execute
+JavaScript.
+For each instruction it writes the result back to this socket.")
+   (lisp-socket-path
+    (uiop:xdg-runtime-dir "lisp.socket")
+    :export t
+    :documentation "The Electron process may be instructed to write to this
+socket to execute Lisp side effects before returning the end result.")
+   (lisp-socket-lock
+    (bt:make-semaphore :name "electron-lisp-lock")
+    :documentation "Synchronize the Electron process creation with the `listener' creation.")
+   (process
+    nil
+    :documentation "The Electron process.")
+   (listener
+    nil
+    :documentation "The thread that listens to `lisp-socket-path'.")
+   (callbacks
+    (make-hash-table)
+    :documentation "Callbacks to execute when the `listener' reads an instruction on the `lisp-socket-path'."))
+  (:export-class-name-p t)
+  (:predicate-name-transformer 'nclasses:always-dashed-predicate-name-transformer)
+  (:documentation "Interface with an Electron instance."))
 
-(defun launch ()
-  (setf *lisp-server-process* (bordeaux-threads:make-thread #'create-server))
-  (unless (and *electron-process*
-               (uiop:process-alive-p *electron-process*))
-    (bt:wait-on-semaphore *lisp-socket-lock*)
-    (setf *electron-process*
+(defvar *interface* nil)
+
+(export-always 'launch)
+(defun launch (&optional (interface *interface*))
+  (setf (listener interface) (bordeaux-threads:make-thread
+                              (lambda () (create-server interface))))
+  (unless (and (process interface)
+               (uiop:process-alive-p (process interface)))
+    (bt:wait-on-semaphore (lisp-socket-lock interface))
+    (setf (process interface)
           (uiop:launch-program (list "electron"
                                      (uiop:native-namestring
                                       (asdf:system-relative-pathname
                                        :cl-electron "source/server.js"))
-                                     (uiop:native-namestring *electron-socket-path*)
-                                     (uiop:native-namestring *lisp-socket-path*))
+                                     (uiop:native-namestring (electron-socket-path interface))
+                                     (uiop:native-namestring (lisp-socket-path interface)))
                                :output t
                                :error-output t))))
 
-(defun create-server ()
+(defun create-server (&optional (interface *interface*))
   (unwind-protect
-       (let ((native-socket-path (uiop:native-namestring *lisp-socket-path*)))
+       (let ((native-socket-path (uiop:native-namestring (lisp-socket-path interface))))
          (iolib:with-open-socket (s :address-family :local
                                     :connect :passive
                                     :local-filename native-socket-path)
@@ -35,35 +65,37 @@
                  (set-difference (iolib/os:file-permissions native-socket-path)
                                  '(:group-read :group-write :group-exec
                                    :other-read :other-write :other-exec)))
-           (bt:signal-semaphore *lisp-socket-lock*)
+           (bt:signal-semaphore (lisp-socket-lock interface))
            (iolib:with-accept-connection (connection s)
              ;; TODO: Can EXPR contain a newline?
              (loop for expr = (read-line connection nil nil)
                    until (null expr)
                    do (unless (uiop:emptyp expr)
-                        (dispatch-callback expr))))))
-    (uiop:delete-file-if-exists *lisp-socket-path*)))
+                        (dispatch-callback expr interface))))))
+    (uiop:delete-file-if-exists (lisp-socket-path interface))))
 
-(defun dispatch-callback (json-string)
+(defun dispatch-callback (json-string &optional (interface *interface*))
   "Handle the callback."
   (let* ((decoded-object (cl-json:decode-json-from-string json-string))
          (callback-id (cdar decoded-object))
-         (callback (gethash callback-id *callbacks*))
+         (callback (gethash callback-id (callbacks interface)))
          (arguments-list (cdr decoded-object)))
     (funcall callback arguments-list)))
 
-(defun terminate ()
-  (when (and *electron-process* (uiop:process-alive-p *electron-process*))
-    (uiop:terminate-process *electron-process*)
-    (setf *electron-process* nil))
-  (when (and *lisp-socket-path* (bt:thread-alive-p *lisp-server-process*))
-    (bt:destroy-thread *lisp-server-process*)
-    (uiop:delete-file-if-exists *lisp-socket-path*)))
+(export-always 'terminate)
+(defun terminate (&optional (interface *interface*))
+  (when (and (process interface) (uiop:process-alive-p (process interface)))
+    (uiop:terminate-process (process interface))
+    (setf (process interface) nil))
+  (when (and (lisp-socket-path interface) (bt:thread-alive-p (listener interface)))
+    (bt:destroy-thread (listener interface))
+    (setf (listener interface) nil)
+    (uiop:delete-file-if-exists (lisp-socket-path interface))))
 
-(defun send-message (message)
+(defun send-message (target message)
   ;; TODO: Keep socket open?  Use `*socket-stream*'.
   (iolib:with-open-socket (s :address-family :local
-                             :remote-filename (uiop:native-namestring *electron-socket-path*))
+                             :remote-filename (uiop:native-namestring (electron-socket-path (interface target))))
     (write-line message s)
     (finish-output s)
     (read-line s)))
@@ -76,17 +108,25 @@
   "Generate a new unique ID."
   (parse-integer (symbol-name (gensym ""))))
 
-(defclass remote-object ()
-  ((remote-symbol :accessor remote-symbol
-                  :initarg :remote-symbol
-                  :initform (new-id)
-                  :documentation "The variable name used on the remotely running NodeJS system.")))
+(define-class remote-object ()
+  ((remote-symbol
+    (new-id)
+    :documentation "The variable name used on the remotely running NodeJS system.")
+   (interface
+    *interface*
+    :type interface
+    :documentation "The Electron `interface' the object will use for its whole lifetime."))
+  (:documentation "Represent objects living in Electron."))
 
-(defclass browser-view (remote-object)
-  ())
 
-(defclass browser-window (remote-object)
-  ())
+(define-class browser-view (remote-object)
+  ()
+  (:export-class-name-p t))
 
-(defclass web-contents (remote-object)
-  ())
+(define-class browser-window (remote-object)
+  ()
+  (:export-class-name-p t))
+
+(define-class web-contents (remote-object)
+  ()
+  (:export-class-name-p t))

@@ -13,13 +13,13 @@
                cl-json
                iolib
                iolib/os
+               nclasses
                parenscript
                bordeaux-threads)
   :components ((:module "source"
                 :components
                 ((:file "package")
-                 (:file "global" :depends-on ("package"))
-                 (:file "core" :depends-on ("package" "global"))
+                 (:file "core" :depends-on ("package"))
                  (:file "browser-window" :depends-on ("package" "core"))
                  (:file "browser-view" :depends-on ("package" "core"))
                  (:file "web-contents" :depends-on ("package" "core"))))))
