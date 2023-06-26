@@ -36,12 +36,12 @@
                                  '(:group-read :group-write :group-exec
                                    :other-read :other-write :other-exec)))
            (bt:signal-semaphore *lisp-socket-lock*)
-           (loop as connection = (iolib:accept-connection s)
-                 while connection
-                 do (progn
-                      (let ((expr (alex:read-stream-content-into-string connection)))
-                        (unless (uiop:emptyp expr)
-                          (dispatch-callback expr)))))))
+           (iolib:with-accept-connection (connection s)
+             ;; TODO: Can EXPR contain a newline?
+             (loop for expr = (read-line connection nil nil)
+                   until (null expr)
+                   do (unless (uiop:emptyp expr)
+                        (dispatch-callback expr))))))
     (uiop:delete-file-if-exists *lisp-socket-path*)))
 
 (defun dispatch-callback (json-string)
