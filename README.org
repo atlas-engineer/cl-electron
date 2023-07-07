@@ -34,7 +34,7 @@ the example below.
        %default-channels)
 #+end_src
 
-Start a REPL will all the dependencies by issuing:
+Start a REPL with all the dependencies by issuing:
 
 =guix shell -D -f /path/to/guix.scm -- sbcl=.
 
