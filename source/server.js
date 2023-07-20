@@ -10,7 +10,7 @@ if (process.argv.length != 4) {
   process.exit(1);
 }
 
-const { app, ipcMain, BrowserWindow } = require('electron')
+const { app, ipcMain, BrowserView, BrowserWindow } = require('electron')
 const path = require('path')
 const net = require('net');
 client = new net.Socket();
