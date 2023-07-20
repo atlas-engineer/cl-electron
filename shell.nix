@@ -20,6 +20,9 @@ stdenv.mkDerivation {
     nodejs
     electron
     nodePackages.npm
+    libfixposix.out
   ];
+
+  LD_LIBRARY_PATH = with lib; "${makeLibraryPath [ pkgs.libfixposix.out ]};";
 
 }
