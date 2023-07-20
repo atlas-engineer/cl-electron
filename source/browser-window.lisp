@@ -109,6 +109,13 @@ See `set-bounds' for the list of available parameters."
            (remote-symbol browser-window)
            (remote-symbol browser-view))))
 
+(defmethod set-browser-view ((browser-window browser-window) (browser-view browser-view))
+  (send-message
+   browser-window
+   (format nil "~a.setBrowserView(~a)"
+           (remote-symbol browser-window)
+           (remote-symbol browser-view))))
+
 (defmethod remove-browser-view ((browser-window browser-window) (browser-view browser-view))
   (send-message
    browser-window
