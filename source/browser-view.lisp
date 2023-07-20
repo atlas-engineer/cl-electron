@@ -18,11 +18,14 @@
    (format nil "~a.setBounds({x: ~a, y: ~a, width: ~a, height: ~a})"
            (remote-symbol browser-view) x y width height)))
 
-(defmethod get-bounds ((browser-view browser-view))
+(defmethod get-bounds ((browser-view browser-view) parameter)
+  "Return Rectangle Object's PARAMETER of BROWSER-VIEW.
+See `set-bounds' for the list of available parameters."
   (let ((new-id (new-id)))
     (send-message
      browser-view
-     (format nil "~a = ~a.getBounds()" new-id (remote-symbol browser-view)))))
+     (format nil "~a = ~a.getBounds().~(~a~)"
+             new-id (remote-symbol browser-view) parameter))))
 
 (defmethod set-auto-resize ((browser-view browser-view)
                             width
