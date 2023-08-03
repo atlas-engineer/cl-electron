@@ -93,9 +93,12 @@ socket to execute Lisp side effects before returning the end result.")
     (uiop:delete-file-if-exists (lisp-socket-path interface))))
 
 (defun send-message (target message)
-  ;; TODO: Keep socket open?  Use `*socket-stream*'.
-  (iolib:with-open-socket (s :address-family :local
-                             :remote-filename (uiop:native-namestring (electron-socket-path (interface target))))
+  (send-message-interface (interface target) message))
+
+(defun send-message-interface (interface message)
+  (iolib:with-open-socket
+      (s :address-family :local
+         :remote-filename (uiop:native-namestring (electron-socket-path interface)))
     (write-line message s)
     (finish-output s)
     (read-line s)))
