@@ -21,11 +21,11 @@
 (defmethod get-bounds ((browser-view browser-view) parameter)
   "Return Rectangle Object's PARAMETER of BROWSER-VIEW.
 See `set-bounds' for the list of available parameters."
-  (let ((new-id (new-id)))
-    (send-message
-     browser-view
-     (format nil "~a = ~a.getBounds().~(~a~)"
-             new-id (remote-symbol browser-view) parameter))))
+  (parse-integer
+   (send-message
+    browser-view
+    (format nil "~a.getBounds().~(~a~)"
+            (remote-symbol browser-view) parameter))))
 
 (defmethod set-auto-resize ((browser-view browser-view)
                             width
