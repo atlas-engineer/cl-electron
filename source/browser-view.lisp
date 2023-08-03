@@ -27,6 +27,11 @@ See `set-bounds' for the list of available parameters."
     (format nil "~a.getBounds().~(~a~)"
             (remote-symbol browser-view) parameter))))
 
+(defmethod set-background-color ((browser-view browser-view) color)
+  (send-message
+   browser-view
+   (format nil "~a.setBackgroundColor(\"~a\")" (remote-symbol browser-view) color)))
+
 (defmethod set-auto-resize ((browser-view browser-view)
                             width
                             height
@@ -49,3 +54,9 @@ See `set-bounds' for the list of available parameters."
     (make-instance 'web-contents
                    :remote-symbol new-id
                    :interface (interface browser-view))))
+
+(defmethod load-url ((browser-view browser-view) url)
+  (load-url (web-contents browser-view) url))
+
+(defmethod kill ((browser-view browser-view))
+  (kill (web-contents browser-view)))
