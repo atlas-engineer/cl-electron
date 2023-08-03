@@ -136,3 +136,26 @@ See `set-bounds' for the list of available parameters."
     (make-instance 'web-contents
                    :remote-symbol new-id
                    :interface (interface browser-window))))
+
+;; Static methods
+;; https://www.electronjs.org/docs/latest/api/browser-window#static-methods
+
+(defun get-all-windows (interface)
+  (send-message-interface
+   interface
+   (format nil "BrowserWindow.getAllWindows()")))
+
+(defun test-get-focused-window (interface)
+  (send-message-interface
+   interface
+   (format nil "BrowserWindow.getFocusedWindow()")))
+
+(defun window-from-web-contents (interface web-contents)
+  (send-message-interface
+   interface
+   (format nil "BrowserWindow.fromWebContents(~a)" (remote-symbol web-contents))))
+
+(defun window-from-id (interface id)
+  (send-message-interface
+   interface
+   (format nil "BrowserWindow.fromId(~a)" id)))
