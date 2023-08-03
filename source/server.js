@@ -10,15 +10,15 @@ if (process.argv.length != 4) {
   process.exit(1);
 }
 
-const { app, ipcMain, BrowserView, BrowserWindow } = require('electron')
+const { app, ipcMain, BrowserView, BrowserWindow, webContents, protocol, net } = require('electron')
 const path = require('path')
-const net = require('net');
-client = new net.Socket();
+const nodejs_net = require('net');
+client = new nodejs_net.Socket();
 
 ////////////
 // Server //
 ////////////
-const server = net.createServer((socket) => {
+const server = nodejs_net.createServer((socket) => {
     socket.on('data', (data) => {
         try {
             const result = eval(data.toString());
