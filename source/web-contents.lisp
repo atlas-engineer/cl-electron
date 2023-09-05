@@ -84,6 +84,11 @@
    web-contents
    (format nil "~a.getTitle()" (remote-symbol web-contents))))
 
+(defmethod reload ((web-contents web-contents))
+  (send-message
+   web-contents
+   (format nil "~a.reload()" (remote-symbol web-contents))))
+
 (defmethod focus ((web-contents web-contents))
   (send-message
    web-contents
@@ -145,3 +150,16 @@
      web-contents
      (format nil "~a = ~a.session" new-id (remote-symbol web-contents)))
     new-id))
+
+(defmethod execute-javascript ((web-contents web-contents) code &key (user-gesture "false"))
+  (send-message
+   web-contents
+   (format nil "~a.executeJavaScript(\"~a\", \"~a\")"
+           (remote-symbol web-contents) code user-gesture)))
+
+(defmethod execute-javascript-in-isolated-world ((web-contents web-contents) world-id code
+                                                 &key (user-gesture "false"))
+  (send-message
+   web-contents
+   (format nil "~a.executeJavaScript(~a, {code: \"~a\"}, \"~a\")"
+           (remote-symbol web-contents) world-id code user-gesture)))
