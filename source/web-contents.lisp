@@ -69,10 +69,10 @@
    web-contents
    (format nil "~a.getURL()" (remote-symbol web-contents))))
 
-(defmethod open-dev-tools ((web-contents web-contents))
+(defmethod open-dev-tools ((web-contents web-contents) &key (options "{mode: 'undocked'}"))
   (send-message
    web-contents
-   (format nil "~a.openDevTools()" (remote-symbol web-contents))))
+   (format nil "~a.openDevTools(~a)" (remote-symbol web-contents) options)))
 
 (defmethod close-dev-tools ((web-contents web-contents))
   (send-message
