@@ -50,8 +50,7 @@ socket to execute Lisp side effects before returning the end result.")
                                        :cl-electron "source/server.js"))
                                      (uiop:native-namestring (electron-socket-path interface))
                                      (uiop:native-namestring (lisp-socket-path interface)))
-                               :output t
-                               :error-output t))))
+                               :output :interactive))))
 
 (defun create-server (&optional (interface *interface*))
   (unwind-protect
