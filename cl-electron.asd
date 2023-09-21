@@ -13,6 +13,7 @@
                cl-json
                iolib
                iolib/os
+               str
                nclasses
                parenscript
                bordeaux-threads)

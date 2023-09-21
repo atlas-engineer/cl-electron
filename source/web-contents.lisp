@@ -163,3 +163,16 @@
    web-contents
    (format nil "~a.executeJavaScript(~a, {code: \"~a\"}, \"~a\")"
            (remote-symbol web-contents) world-id code user-gesture)))
+
+(defmethod execute-javascript-with-promise-callback
+    ((web-contents web-contents) code callback &key (user-gesture "false"))
+  (let ((identifier (new-integer-id)))
+    (setf (gethash identifier (callbacks (interface web-contents)))
+          (lambda (args) (apply callback (cons web-contents args))))
+    (send-message
+     web-contents
+     (format nil "~a.executeJavaScript(\"~a\", \"~a\").then((value) => {
+                   jsonString = JSON.stringify({ callback: ~a, value: value });
+                   client.write(`${jsonString}\\n`);})"
+             (remote-symbol web-contents) code user-gesture identifier)
+     :replace-newlines-p nil)))

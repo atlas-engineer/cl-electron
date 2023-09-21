@@ -22,10 +22,11 @@
      (format nil
              "~a.webContents.on('before-input-event', (event, input) => {
                jsonString = JSON.stringify({ callback: ~a, input: input });
-               client.write(`${jsonString} \\\n`);
+               client.write(`${jsonString}\\n`);
                event.preventDefault();})"
              (remote-symbol browser-window)
-             identifier))))
+             identifier)
+     :replace-newlines-p nil)))
 
 (defmethod load-url ((browser-window browser-window) url)
   (send-message

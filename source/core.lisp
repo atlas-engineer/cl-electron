@@ -66,8 +66,7 @@ socket to execute Lisp side effects before returning the end result.")
                                    :other-read :other-write :other-exec)))
            (bt:signal-semaphore (lisp-socket-lock interface))
            (iolib:with-accept-connection (connection s)
-             ;; TODO: Can EXPR contain a newline?
-             (loop for expr = (read-line connection nil nil)
+             (loop for expr = (read-line connection nil)
                    until (null expr)
                    do (unless (uiop:emptyp expr)
                         (dispatch-callback expr interface))))))
@@ -78,8 +77,8 @@ socket to execute Lisp side effects before returning the end result.")
   (let* ((decoded-object (cl-json:decode-json-from-string json-string))
          (callback-id (cdar decoded-object))
          (callback (gethash callback-id (callbacks interface)))
-         (arguments-list (cdr decoded-object)))
-    (funcall callback arguments-list)))
+         (arguments-list (cdadr decoded-object)))
+    (funcall callback (list arguments-list))))
 
 (export-always 'terminate)
 (defun terminate (&optional (interface *interface*))
@@ -91,16 +90,21 @@ socket to execute Lisp side effects before returning the end result.")
     (setf (listener interface) nil)
     (uiop:delete-file-if-exists (lisp-socket-path interface))))
 
-(defun send-message (target message)
-  (send-message-interface (interface target) message))
+(defun send-message (target message &key (replace-newlines-p t))
+  (send-message-interface (interface target) message :replace-newlines-p replace-newlines-p))
 
-(defun send-message-interface (interface message)
-  (iolib:with-open-socket
-      (s :address-family :local
-         :remote-filename (uiop:native-namestring (electron-socket-path interface)))
-    (write-line message s)
-    (finish-output s)
-    (read-line s)))
+(defun send-message-interface (interface message &key (replace-newlines-p t))
+  ;; The Lisp reader consumes the backslashes when writing, we add
+  ;; more to create properly formed JavaScript.
+  (let ((message (if replace-newlines-p
+                     (str:replace-all "\\n" "\\\\n" message)
+                     message)))
+    (iolib:with-open-socket
+        (s :address-family :local
+           :remote-filename (uiop:native-namestring (electron-socket-path interface)))
+      (write-line message s)
+      (finish-output s)
+      (read-line s))))
 
 (defun new-id ()
   "Generate a new unique ID."
