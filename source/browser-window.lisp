@@ -10,13 +10,7 @@
   (send-message
    browser-window
    (format nil "~a = new BrowserWindow(~a);"
-           (remote-symbol browser-window)
-           options))
-  ;; We load about blank to initialize the web context (this is a renderer bug).
-  (send-message
-   browser-window
-   (format nil "~a.loadURL('about:blank')"
-           (remote-symbol browser-window))))
+           (remote-symbol browser-window) options)))
 
 (defmethod register-before-input-event ((browser-window browser-window) lambda)
   (let ((identifier (new-integer-id)))
