@@ -34,6 +34,7 @@ socket to execute Lisp side effects before returning the end result.")
   (:predicate-name-transformer 'nclasses:always-dashed-predicate-name-transformer)
   (:documentation "Interface with an Electron instance."))
 
+(export-always '*interface*)
 (defvar *interface* nil)
 
 (export-always 'launch)
