@@ -207,3 +207,18 @@
                    client.write(`${jsonString}\\n`);})"
              (remote-symbol web-contents) code user-gesture identifier)
      :replace-newlines-p nil)))
+
+(defmethod register-before-input-event ((web-contents web-contents) callback)
+  (let ((identifier (new-integer-id)))
+    (setf (gethash identifier (callbacks (interface web-contents)))
+          (lambda (args) (apply callback (cons web-contents args))))
+    (send-message
+     web-contents
+     (format nil
+             "~a.on('before-input-event', (event, input) => {
+               jsonString = JSON.stringify({ callback: ~a, input: input });
+               client.write(`${jsonString}\\n`);
+               event.preventDefault();})"
+             (remote-symbol web-contents)
+             identifier)
+     :replace-newlines-p nil)))

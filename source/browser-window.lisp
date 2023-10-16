@@ -13,21 +13,8 @@
            (remote-symbol browser-window) options)))
 
 (export-always 'register-before-input-event)
-(defmethod register-before-input-event ((browser-window browser-window) lambda)
-  (let ((identifier (new-integer-id)))
-    (setf (gethash identifier (callbacks (interface browser-window)))
-          (lambda (arguments-list)
-            (apply lambda (cons browser-window arguments-list))))
-    (send-message
-     browser-window
-     (format nil
-             "~a.webContents.on('before-input-event', (event, input) => {
-               jsonString = JSON.stringify({ callback: ~a, input: input });
-               client.write(`${jsonString}\\n`);
-               event.preventDefault();})"
-             (remote-symbol browser-window)
-             identifier)
-     :replace-newlines-p nil)))
+(defmethod register-before-input-event ((browser-window browser-window) fn)
+  (register-before-input-event (web-contents browser-window) fn))
 
 (export-always 'load-url)
 (defmethod load-url ((browser-window browser-window) url)
