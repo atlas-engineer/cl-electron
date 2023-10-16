@@ -25,3 +25,10 @@
                  (:file "browser-view" :depends-on ("package" "core"))
                  (:file "web-contents" :depends-on ("package" "core"))
                  (:file "protocol" :depends-on ("package" "core"))))))
+
+(defsystem "cl-electron/demos"
+  :pathname "demos"
+  :depends-on (cl-electron)
+  :components ((:file "demo-window")
+               (:file "demo-views")
+               (:file "demo-protocol")))
