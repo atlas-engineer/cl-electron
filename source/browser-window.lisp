@@ -5,7 +5,8 @@
 
 (in-package :electron)
 
-(defmethod initialize-instance :after ((browser-window browser-window) &key (options ""))
+(defmethod initialize-instance :after ((browser-window browser-window)
+                                       &key (options "{frame: false}"))
   (send-message
    browser-window
    (format nil "~a = new BrowserWindow(~a);"
