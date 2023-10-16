@@ -119,6 +119,7 @@ See `set-bounds' for the list of available parameters."
            (remote-symbol browser-view))))
 
 (defmethod remove-browser-view ((browser-window browser-window) (browser-view browser-view))
+  ;; Hides the view and doesn't require re-rendering it.
   (send-message
    browser-window
    (format nil "~a.removeBrowserView(~a)"
