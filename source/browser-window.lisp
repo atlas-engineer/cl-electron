@@ -80,11 +80,11 @@
 (defmethod get-bounds ((browser-window browser-window) parameter)
   "Return Rectangle Object's PARAMETER of BROWSER-WINDOW.
 See `set-bounds' for the list of available parameters."
-  (let ((new-id (new-id)))
-    (send-message
-     browser-window
-     (format nil "~a = ~a.getBounds().~(~a~)"
-             new-id (remote-symbol browser-window) parameter))))
+  (parse-integer
+   (send-message
+    browser-window
+    (format nil "~a.getBounds().~(~a~)"
+            (remote-symbol browser-window) parameter))))
 
 (defmethod set-bounds ((browser-window browser-window) x y width height)
   (send-message
