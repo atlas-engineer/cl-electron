@@ -111,12 +111,24 @@ See `set-bounds' for the list of available parameters."
            (remote-symbol browser-window)
            (remote-symbol browser-view))))
 
+(defmethod set-top-browser-view ((browser-window browser-window) (browser-view browser-view))
+  (send-message
+   browser-window
+   (format nil "~a.setTopBrowserView(~a)"
+           (remote-symbol browser-window)
+           (remote-symbol browser-view))))
+
 (defmethod remove-browser-view ((browser-window browser-window) (browser-view browser-view))
   (send-message
    browser-window
    (format nil "~a.removeBrowserView(~a)"
            (remote-symbol browser-window)
            (remote-symbol browser-view))))
+
+(defmethod get-browser-view ((browser-window browser-window))
+  (send-message
+   browser-window
+   (format nil "~a.getBrowserView()" (remote-symbol browser-window))))
 
 (defmethod get-browser-views ((browser-window browser-window))
   (send-message
@@ -131,6 +143,16 @@ See `set-bounds' for the list of available parameters."
     (make-instance 'web-contents
                    :remote-symbol new-id
                    :interface (interface browser-window))))
+
+(defmethod get-child-windows ((browser-window browser-window))
+  (send-message
+   browser-window
+   (format nil "~a.getChildWindows()" (remote-symbol browser-window))))
+
+(defmethod get-parent-window ((browser-window browser-window))
+  (send-message
+   browser-window
+   (format nil "~a.getParentWindow()" (remote-symbol browser-window))))
 
 ;; Static methods
 ;; https://www.electronjs.org/docs/latest/api/browser-window#static-methods
@@ -154,3 +176,8 @@ See `set-bounds' for the list of available parameters."
   (send-message-interface
    interface
    (format nil "BrowserWindow.fromId(~a)" id)))
+
+(defmethod id ((browser-window browser-window))
+  (send-message
+   browser-window
+   (format nil "~a.id" (remote-symbol browser-window))))
