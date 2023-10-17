@@ -29,10 +29,60 @@ socket to execute Lisp side effects before returning the end result.")
     :documentation "The thread that listens to `lisp-socket-path'.")
    (callbacks
     (make-hash-table)
-    :documentation "Callbacks to execute when the `listener' reads an instruction on the `lisp-socket-path'."))
+    :documentation "Callbacks to execute when the `listener' reads an instruction on the `lisp-socket-path'.")
+   (protocols
+    nil
+    ;; The slot can't be set at initialization since protocol objects inherit
+    ;; from remote-object, whose `interface' slot is only set after an object of
+    ;; class interface has been initialized.
+    :initarg nil
+    :export t
+    :reader t
+    :writer nil
+    :type (or list-of-protocols null)
+    :documentation "A list of custom schemes (protocols).
+The slot can only be set before invoking `launch'.")
+   (server-path
+    (asdf:system-relative-pathname :cl-electron "source/server.js")
+    :export t
+    :reader t
+    :writer nil
+    :type pathname
+    :documentation "The path to a JS file that specifies the IPC mechanism.
+
+All of its content is evaluated before the app signals the ready event.  Not
+meant to be overwritten but rather appended.  For instance, `protocols' are
+required to be registered there."))
   (:export-class-name-p t)
   (:predicate-name-transformer 'nclasses:always-dashed-predicate-name-transformer)
   (:documentation "Interface with an Electron instance."))
+
+(defmethod alive-p ((interface interface))
+  "Whether the INTERFACE's Electron process is running."
+  (with-slots (process) interface
+    (and process (uiop:process-alive-p process))))
+
+(defun to-tmp-file (pathname s)
+  "Return the pathname of tmp file featuring the concatenation of file PATHNAME and string S."
+  (uiop:with-temporary-file (:pathname p :keep t)
+    (uiop:copy-file pathname p)
+    (str:to-file p s :if-exists :append)
+    (uiop:native-namestring p)))
+
+(defmethod (setf protocols) (value (interface interface))
+  (if (alive-p interface)
+      (error "Protocols need to be set before launching ~a." interface)
+      (with-slots (protocols server-path) interface
+        (setf protocols value)
+        (setf server-path (to-tmp-file server-path (register protocols))))))
+
+(defmethod interface-equal ((interface1 interface) (interface2 interface))
+  "Return non-nil when interfaces are equal."
+  (let ((process1 (process interface1))
+        (process2 (process interface2)))
+    (when (and process1 process2)
+      (= (uiop:process-info-pid process1)
+         (uiop:process-info-pid process2)))))
 
 (export-always '*interface*)
 (defvar *interface* nil)
@@ -41,16 +91,14 @@ socket to execute Lisp side effects before returning the end result.")
 (defun launch (&optional (interface *interface*))
   (setf (listener interface) (bordeaux-threads:make-thread
                               (lambda () (create-server interface))))
-  (unless (and (process interface)
-               (uiop:process-alive-p (process interface)))
+  (unless (alive-p interface)
     (bt:wait-on-semaphore (lisp-socket-lock interface))
     (setf (process interface)
-          (uiop:launch-program (list "electron"
-                                     (uiop:native-namestring
-                                      (asdf:system-relative-pathname
-                                       :cl-electron "source/server.js"))
-                                     (uiop:native-namestring (electron-socket-path interface))
-                                     (uiop:native-namestring (lisp-socket-path interface)))
+          (uiop:launch-program `("electron"
+                                 ,@(mapcar #'uiop:native-namestring
+                                           (list (server-path interface)
+                                                 (electron-socket-path interface)
+                                                 (lisp-socket-path interface))))
                                :output :interactive))))
 
 (defun create-server (&optional (interface *interface*))
@@ -141,3 +189,38 @@ socket to execute Lisp side effects before returning the end result.")
 (define-class web-contents (remote-object)
   ()
   (:export-class-name-p t))
+
+(define-class protocol (remote-object)
+  ((scheme-name
+    ""
+    :export t
+    :reader t
+    :writer nil
+    :type string
+    :documentation "Custom scheme name to handle.
+HTTPS is an example of a scheme.")
+   (privileges
+    "{standard:true,secure:true,supportFetchAPI:true}"
+    :export t
+    :reader t
+    :writer nil
+    :type string
+    :documentation "A string that specifies the scheme's privileges.
+See https://www.electronjs.org/docs/latest/api/structures/custom-scheme."))
+  (:export-class-name-p t)
+  (:export-predicate-name-p t))
+
+(defun list-of-protocols-p (list)
+  "Return non-nil when LIST is non-nil and elements are of type `protocol'."
+  (and (consp list) (every #'protocolp list)))
+
+(deftype list-of-protocols ()
+  '(and list (satisfies list-of-protocols-p)))
+
+(defun register (protocols)
+  "Internal function, see the SETF method of `protocols' for the user-facing API."
+  (declare (type list-of-protocols protocols))
+  (format nil "protocol.registerSchemesAsPrivileged([~{{scheme:'~a',privileges:~a}~^, ~}]);"
+          (loop for protocol in protocols
+                collect (scheme-name protocol)
+                collect (privileges protocol))))

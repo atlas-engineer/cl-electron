@@ -23,4 +23,5 @@
                  (:file "core" :depends-on ("package"))
                  (:file "browser-window" :depends-on ("package" "core"))
                  (:file "browser-view" :depends-on ("package" "core"))
-                 (:file "web-contents" :depends-on ("package" "core"))))))
+                 (:file "web-contents" :depends-on ("package" "core"))
+                 (:file "protocol" :depends-on ("package" "core"))))))
