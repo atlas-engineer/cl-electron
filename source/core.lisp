@@ -118,9 +118,13 @@ socket to execute Lisp side effects before returning the end result.")
 (define-class remote-object ()
   ((remote-symbol
     (new-id)
+    :reader t
+    :writer nil
     :documentation "The variable name used on the remotely running NodeJS system.")
    (interface
     *interface*
+    :reader t
+    :writer nil
     :type interface
     :documentation "The Electron `interface' the object will use for its whole lifetime."))
   (:documentation "Represent objects living in Electron."))
