@@ -142,9 +142,6 @@ required to be registered there."))
     (setf (listener interface) nil)
     (uiop:delete-file-if-exists (lisp-socket-path interface))))
 
-(defun send-message (target message &key (replace-newlines-p t))
-  (send-message-interface (interface target) message :replace-newlines-p replace-newlines-p))
-
 (defun send-message-interface (interface message &key (replace-newlines-p t))
   ;; The Lisp reader consumes the backslashes when writing, we add
   ;; more to create properly formed JavaScript.
