@@ -172,6 +172,12 @@ See `set-bounds' for the list of available parameters."
    (interface browser-window)
    (format nil "~a.id" (remote-symbol browser-window))))
 
+(export-always 'on)
+(defmethod on ((browser-window browser-window) event-name code)
+  (send-message-interface
+   (interface browser-window)
+   (format nil "~a.on('~a', () => {~a})" (remote-symbol browser-window) event-name code)))
+
 ;; Static methods
 ;; https://www.electronjs.org/docs/latest/api/browser-window#static-methods
 
