@@ -166,6 +166,12 @@ See `set-bounds' for the list of available parameters."
    (interface browser-window)
    (format nil "~a.getParentWindow()" (remote-symbol browser-window))))
 
+(export-always 'id)
+(defmethod id ((browser-window browser-window))
+  (send-message-interface
+   (interface browser-window)
+   (format nil "~a.id" (remote-symbol browser-window))))
+
 ;; Static methods
 ;; https://www.electronjs.org/docs/latest/api/browser-window#static-methods
 
@@ -192,9 +198,3 @@ See `set-bounds' for the list of available parameters."
   (send-message-interface
    interface
    (format nil "BrowserWindow.fromId(~a)" id)))
-
-(export-always 'id)
-(defmethod id ((browser-window browser-window))
-  (send-message
-   browser-window
-   (format nil "~a.id" (remote-symbol browser-window))))
