@@ -60,6 +60,8 @@ See `set-bounds' for the list of available parameters."
                    :remote-symbol new-id
                    :interface (interface browser-view))))
 
+;; Helpers
+
 (export-always 'load-url)
 (defmethod load-url ((browser-view browser-view) url)
   (load-url (web-contents browser-view) url))
@@ -67,3 +69,27 @@ See `set-bounds' for the list of available parameters."
 (export-always 'kill)
 (defmethod kill ((browser-view browser-view))
   (kill (web-contents browser-view)))
+
+(export-always 'focus)
+(defmethod focus ((browser-view browser-view))
+  (focus (web-contents browser-view)))
+
+(export-always 'get-url)
+(defmethod get-url ((browser-view browser-view))
+  (get-url (web-contents browser-view)))
+
+(export-always 'get-title)
+(defmethod get-title ((browser-view browser-view))
+  (get-title (web-contents browser-view)))
+
+(export-always 'open-dev-tools)
+(defmethod open-dev-tools ((browser-view browser-view) &key (options "{mode: 'undocked'}"))
+  (open-dev-tools (web-contents browser-view) :options options))
+
+(export-always 'close-dev-tools)
+(defmethod close-dev-tools ((browser-view browser-view))
+  (close-dev-tools (web-contents browser-view)))
+
+(export-always 'is-focused)
+(defmethod is-focused ((browser-view browser-view))
+  (is-focused (web-contents browser-view)))
