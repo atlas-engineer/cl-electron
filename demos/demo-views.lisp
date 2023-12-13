@@ -31,6 +31,14 @@
 (define-class modeline (browser-view-bound-to-window) ())
 
 (defmethod initialize-instance :after ((modeline modeline) &key)
+  (electron:on (parent-window modeline) "resize"
+    (format nil "~a.setBounds({x:      0,
+                               y:      ~a.getBounds().height - 30,
+                               width:  ~a.getBounds().width,
+                               height: 30})"
+            (electron::remote-symbol modeline)
+            (electron::remote-symbol (parent-window modeline))
+            (electron::remote-symbol (parent-window modeline))))
   (add-view modeline
             :y (- (electron:get-bounds (parent-window modeline) 'height) 30)
             :width (electron:get-bounds (parent-window modeline) 'width)
@@ -46,6 +54,15 @@
 (define-class prompt (browser-view-bound-to-window) ())
 
 (defmethod initialize-instance :after ((prompt prompt) &key)
+  (electron:on (parent-window prompt) "resize"
+    (format nil "~a.setBounds({x:      0,
+                               y:      Math.floor((~a.getBounds().height - 30) * 2/3),
+                               width:  ~a.getBounds().width,
+                               height: Math.ceil((~a.getBounds().height - 30) / 3)})"
+            (electron::remote-symbol prompt)
+            (electron::remote-symbol (parent-window prompt))
+            (electron::remote-symbol (parent-window prompt))
+            (electron::remote-symbol (parent-window prompt))))
   (add-view prompt
             :y (floor (* (- (electron:get-bounds (parent-window prompt) 'height) 30) 2/3))
             :width (electron:get-bounds (parent-window prompt) 'width)
