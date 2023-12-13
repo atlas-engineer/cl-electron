@@ -32,8 +32,7 @@
 
 (defmethod initialize-instance :after ((modeline modeline) &key)
   (add-view modeline
-            :y (+ (electron:get-bounds (parent-window modeline) 'y)
-                  (- (electron:get-bounds (parent-window modeline) 'height) 30))
+            :y (- (electron:get-bounds (parent-window modeline) 'height) 30)
             :width (electron:get-bounds (parent-window modeline) 'width)
             :height 30
             :height-p nil
@@ -48,8 +47,7 @@
 
 (defmethod initialize-instance :after ((prompt prompt) &key)
   (add-view prompt
-            :y (+ (electron:get-bounds (parent-window prompt) 'y)
-                  (floor (* (- (electron:get-bounds (parent-window prompt) 'height) 30) 2/3)))
+            :y (floor (* (- (electron:get-bounds (parent-window prompt) 'height) 30) 2/3))
             :width (electron:get-bounds (parent-window prompt) 'width)
             :height (ceiling (/ (- (electron:get-bounds (parent-window prompt) 'height) 30) 3))
             :height-p nil
