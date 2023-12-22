@@ -36,20 +36,8 @@ the example below.
 
 See [[file:guix.scm][guix.scm]] for how to setup the development environment.
 
-* Example
-In the example below we launch Electron to create a window that handles
-on key press events.
-
-#+begin_src lisp
-  (asdf:load-system :cl-electron)
-  (defvar my-interface (make-instance 'electron:interface
-                                      :electron-socket-path (uiop:xdg-runtime-dir "electron.socket")
-                                      :lisp-socket-path (uiop:xdg-runtime-dir "lisp.socket")))
-  (electron:launch my-interface)
-  (electron::register-before-input-event
-   (make-instance 'electron:browser-window :interface my-interface)
-   (lambda (browser-window input) (print input)))
-#+end_src
+* Examples
+See [[file:demos/][demos]] folder.
 
 * Copying
 cl-electron is distributed under the BSD license.
