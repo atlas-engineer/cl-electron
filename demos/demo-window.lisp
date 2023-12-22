@@ -11,5 +11,9 @@
   (electron:launch)
   ;; See https://github.com/atlas-engineer/cl-electron/issues/15
   (sleep 1)
-  (electron:load-url (make-instance 'electron:browser-window)
-                     "https://en.wikipedia.org/wiki/Electron"))
+  (let ((win (make-instance 'electron:browser-window)))
+    (electron:load-url win "https://en.wikipedia.org/wiki/Electron")
+    (electron::register-before-input-event win
+                                           (lambda (win input)
+                                             (declare (ignore win))
+                                             (print input)))))
