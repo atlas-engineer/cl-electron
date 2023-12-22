@@ -34,9 +34,7 @@ the example below.
        %default-channels)
 #+end_src
 
-Start a REPL with all the dependencies by issuing:
-
-=guix shell -D -f /path/to/guix.scm -- sbcl=.
+See [[file:guix.scm][guix.scm]] for how to setup the development environment.
 
 * Example
 In the example below we launch Electron to create a window that handles
