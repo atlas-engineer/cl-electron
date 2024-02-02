@@ -31,16 +31,25 @@
             (format nil
 "(request) => {
     return new Promise((resolve, reject) => {
-            jsonString = JSON.stringify({ callback: ~a, request: request.url });
-            client.write(`${jsonString}\\n`);
-            client.on('data', data => {
-                const jsonObject = JSON.parse(data.toString());
+        jsonString = JSON.stringify({ callback: ~a, request: request.url });
+        client.write(`${jsonString}\\n`);
+        let message_buffer = '';
+        client.on('data', data => {
+            let data_string = data.toString();
+            let transmission_end_index = data_string.indexOf('');
+            if (transmission_end_index == -1) {
+                message_buffer += data_string;
+            } else {
+                message_buffer += data_string.substring(0, transmission_end_index);
+                const jsonObject = JSON.parse(message_buffer);
+                message_buffer = data_string.substring(transmission_end_index + 1, data_string.length)
                 if (jsonObject.callback == ~a) {
                    const newResponse = new Response(jsonObject.dataString, {
                      headers: { 'content-type': jsonObject.dataType }
                    });
                    resolve(newResponse);
                 }
-            });
+            }
+        });
     });
 }" identifier identifier))))

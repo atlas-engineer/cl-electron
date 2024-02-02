@@ -121,6 +121,7 @@ required to be registered there."))
                         (let ((dispatch-result (dispatch-callback expr interface)))
                           (when (stringp dispatch-result)
                             (write-line dispatch-result connection)
+                            (write-line "" connection)
                             (finish-output connection))))))))
     (uiop:delete-file-if-exists (lisp-socket-path interface))))
 
