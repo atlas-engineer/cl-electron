@@ -18,7 +18,8 @@
   (electron:set-bounds view x y width height)
   view)
 
-(define-class main-view (browser-view-bound-to-window) ())
+(define-class main-view (browser-view-bound-to-window)
+  ((url nil)))
 
 (defmethod initialize-instance :after ((main-view main-view) &key)
   (add-view main-view
@@ -26,6 +27,11 @@
             :height (- (electron:get-bounds (parent-window main-view) 'height)
                        30)
             :vertical-p nil)
+  ;; on load, set slot of main-view.
+  (electron:on-event (electron:web-contents main-view) "did-finish-load"
+                     (lambda (web-contents)
+                       (setf (url main-view) (electron:get-url web-contents))
+                       (format t "I have loaded ~a!" (url main-view))))
   (electron:load-url main-view "https://en.wikipedia.org/wiki/Electron"))
 
 (define-class modeline (browser-view-bound-to-window) ())
