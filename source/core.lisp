@@ -18,6 +18,9 @@ For each instruction it writes the result back to this socket.")
     :export t
     :documentation "The Electron process may be instructed to write to this
 socket to execute Lisp side effects before returning the end result.")
+   (socket-threads
+    (make-hash-table :test 'equalp)
+    :documentation "A list of threads connected to sockets used by the system.")
    (lisp-socket-lock
     (bt:make-semaphore :name "electron-lisp-lock")
     :documentation "Synchronize the Electron process creation with the `listener' creation.")
@@ -124,6 +127,48 @@ required to be registered there."))
                             (write-line "" connection)
                             (finish-output connection))))))))
     (uiop:delete-file-if-exists (lisp-socket-path interface))))
+
+(defun create-socket-path (&key (prefix "cl-electron") (id (new-integer-id)))
+  "Generate a new path suitable for a socket."
+  (uiop:native-namestring (uiop:xdg-runtime-dir (format nil "~a-~a.socket" prefix id))))
+
+(defun create-socket (callback &key (path (create-socket-path)))
+  (unwind-protect
+       (iolib:with-open-socket (s :address-family :local
+                                  :connect :passive
+                                  :local-filename path)
+         (setf (iolib/os:file-permissions path)
+               (set-difference (iolib/os:file-permissions path)
+                               '(:group-read :group-write :group-exec
+                                 :other-read :other-write :other-exec)))
+         (iolib:with-accept-connection (connection s)
+           (loop for expr = (read-line connection nil)
+                 until (null expr)
+                 do (unless (uiop:emptyp expr)
+                      (let* ((decoded-object (cl-json:decode-json-from-string expr))
+                             (callback-result (funcall callback decoded-object)))
+                        (when (stringp callback-result)
+                          (write-line callback-result connection)
+                          (write-line "" connection)
+                          (finish-output connection)))))))
+    (uiop:delete-file-if-exists path)))
+
+(defun create-socket-thread (callback &optional (interface *interface*))
+  (let* ((id (new-id))
+         (socket-path (uiop:native-namestring (create-socket-path :id id))))
+    (setf (gethash id (socket-threads interface))
+          (bordeaux-threads:make-thread
+           (lambda () (create-socket callback :path socket-path))))
+    (values id socket-path)))
+
+(defun create-node-socket-thread (callback &optional (interface *interface*))
+  (multiple-value-bind (thread-id socket-path)
+      (create-socket-thread callback)
+    (send-message-interface
+     interface
+     (format nil "~a = new nodejs_net.Socket().connect('~a', () => { ~a.setNoDelay(true); });"
+             thread-id socket-path thread-id))
+    (values thread-id socket-path)))
 
 (defun dispatch-callback (json-string &optional (interface *interface*))
   "Handle the callback."
