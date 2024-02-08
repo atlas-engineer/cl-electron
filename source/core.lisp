@@ -8,7 +8,7 @@
 
 (define-class interface ()
   ((electron-socket-path
-    (uiop:xdg-runtime-dir "electron.socket")
+    (uiop:xdg-runtime-dir "cl-electron.socket")
     :export t
     :documentation "The Electron process listens to this sockets to execute
 JavaScript.
