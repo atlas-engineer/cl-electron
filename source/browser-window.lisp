@@ -26,8 +26,7 @@
                client.write(`${jsonString}\\n`);
                event.preventDefault();})"
              (remote-symbol browser-window)
-             identifier)
-     :replace-newlines-p nil)))
+             identifier))))
 
 (export-always 'load-url)
 (defmethod load-url ((browser-window browser-window) url)

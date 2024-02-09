@@ -14,6 +14,7 @@
                iolib
                iolib/os
                str
+               cl-ppcre
                nclasses
                parenscript
                bordeaux-threads)

@@ -143,18 +143,14 @@ required to be registered there."))
     (setf (listener interface) nil)
     (uiop:delete-file-if-exists (lisp-socket-path interface))))
 
-(defun send-message-interface (interface message &key (replace-newlines-p t))
-  ;; The Lisp reader consumes the backslashes when writing, we add
-  ;; more to create properly formed JavaScript.
-  (let ((message (if replace-newlines-p
-                     (str:replace-all "\\n" "\\\\n" message)
-                     message)))
-    (iolib:with-open-socket
-        (s :address-family :local
-           :remote-filename (uiop:native-namestring (electron-socket-path interface)))
-      (write-line message s)
-      (finish-output s)
-      (read-line s))))
+(defun send-message-interface (interface message)
+  (iolib:with-open-socket (s :address-family :local
+                             :remote-filename (uiop:native-namestring
+                                               (electron-socket-path interface)))
+
+    (write-line message s)
+    (finish-output s)
+    (read-line s)))
 
 (defun new-id ()
   "Generate a new unique ID."

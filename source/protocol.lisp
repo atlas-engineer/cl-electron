@@ -10,8 +10,7 @@
 (defmethod handle ((protocol protocol) handler)
   (send-message-interface
    (interface protocol)
-   (format nil "protocol.handle('~a', ~a)" (scheme-name protocol) handler)
-   :replace-newlines-p nil))
+   (format nil "protocol.handle('~a', ~a)" (scheme-name protocol) handler)))
 
 (export-always 'handle-content)
 (defmethod handle-content ((protocol protocol) content)
