@@ -13,26 +13,12 @@
     :documentation "The Electron process listens to this sockets to execute
 JavaScript.
 For each instruction it writes the result back to this socket.")
-   (lisp-socket-path
-    (uiop:xdg-runtime-dir "lisp.socket")
-    :export t
-    :documentation "The Electron process may be instructed to write to this
-socket to execute Lisp side effects before returning the end result.")
    (socket-threads
     (make-hash-table :test 'equalp)
     :documentation "A list of threads connected to sockets used by the system.")
-   (lisp-socket-lock
-    (bt:make-semaphore :name "electron-lisp-lock")
-    :documentation "Synchronize the Electron process creation with the `listener' creation.")
    (process
     nil
     :documentation "The Electron process.")
-   (listener
-    nil
-    :documentation "The thread that listens to `lisp-socket-path'.")
-   (callbacks
-    (make-hash-table)
-    :documentation "Callbacks to execute when the `listener' reads an instruction on the `lisp-socket-path'.")
    (protocols
     nil
     ;; The slot can't be set at initialization since protocol objects inherit
@@ -92,41 +78,13 @@ required to be registered there."))
 
 (export-always 'launch)
 (defun launch (&optional (interface *interface*))
-  (setf (listener interface) (bordeaux-threads:make-thread
-                              (lambda () (create-server interface))))
   (unless (alive-p interface)
-    (bt:wait-on-semaphore (lisp-socket-lock interface))
     (setf (process interface)
           (uiop:launch-program `("electron"
                                  ,@(mapcar #'uiop:native-namestring
                                            (list (server-path interface)
-                                                 (electron-socket-path interface)
-                                                 (lisp-socket-path interface))))
+                                                 (electron-socket-path interface))))
                                :output :interactive))))
-
-(defun create-server (&optional (interface *interface*))
-  (unwind-protect
-       (let ((native-socket-path (uiop:native-namestring (lisp-socket-path interface))))
-         (iolib:with-open-socket (s :address-family :local
-                                    :connect :passive
-                                    :local-filename native-socket-path)
-           ;; We don't want group members or others to flood the socket or, worse,
-           ;; execute code.
-           (setf (iolib/os:file-permissions native-socket-path)
-                 (set-difference (iolib/os:file-permissions native-socket-path)
-                                 '(:group-read :group-write :group-exec
-                                   :other-read :other-write :other-exec)))
-           (bt:signal-semaphore (lisp-socket-lock interface))
-           (iolib:with-accept-connection (connection s)
-             (loop for expr = (read-line connection nil)
-                   until (null expr)
-                   do (unless (uiop:emptyp expr)
-                        (let ((dispatch-result (dispatch-callback expr interface)))
-                          (when (stringp dispatch-result)
-                            (write-line dispatch-result connection)
-                            (write-line "" connection)
-                            (finish-output connection))))))))
-    (uiop:delete-file-if-exists (lisp-socket-path interface))))
 
 (defun create-socket-path (&key (prefix "cl-electron") (id (new-integer-id)))
   "Generate a new path suitable for a socket."
@@ -170,23 +128,11 @@ required to be registered there."))
              thread-id socket-path thread-id))
     (values thread-id socket-path)))
 
-(defun dispatch-callback (json-string &optional (interface *interface*))
-  "Handle the callback."
-  (let* ((decoded-object (cl-json:decode-json-from-string json-string))
-         (callback-id (cdar decoded-object))
-         (callback (gethash callback-id (callbacks interface)))
-         (arguments-list (cdadr decoded-object)))
-    (funcall callback (list arguments-list))))
-
 (export-always 'terminate)
 (defun terminate (&optional (interface *interface*))
   (when (and (process interface) (uiop:process-alive-p (process interface)))
     (uiop:terminate-process (process interface))
-    (setf (process interface) nil))
-  (when (and (lisp-socket-path interface) (bt:thread-alive-p (listener interface)))
-    (bt:destroy-thread (listener interface))
-    (setf (listener interface) nil)
-    (uiop:delete-file-if-exists (lisp-socket-path interface))))
+    (setf (process interface) nil)))
 
 (defun send-message-interface (interface message)
   (iolib:with-open-socket (s :address-family :local
