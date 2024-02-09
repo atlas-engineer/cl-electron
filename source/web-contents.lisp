@@ -179,20 +179,24 @@
      (format nil "~a = ~a.session" new-id (remote-symbol web-contents)))
     new-id))
 
+(defun %quote-js (js-code)
+  "Replace each backlash with 2, unless a \" follows it."
+  (ppcre:regex-replace-all "\\\\(?!\")" js-code "\\\\\\\\"))
+
 (export-always 'execute-javascript)
 (defmethod execute-javascript ((web-contents web-contents) code &key (user-gesture "false"))
   (send-message-interface
    (interface web-contents)
-   (format nil "~a.executeJavaScript(\"~a\", \"~a\")"
-           (remote-symbol web-contents) code user-gesture)))
+   (format nil "~a.executeJavaScript(\"~a\", ~a)"
+           (remote-symbol web-contents) (%quote-js code) user-gesture)))
 
 (export-always 'execute-javascript-in-isolated-world)
 (defmethod execute-javascript-in-isolated-world ((web-contents web-contents) world-id code
                                                  &key (user-gesture "false"))
   (send-message-interface
    (interface web-contents)
-   (format nil "~a.executeJavaScript(~a, {code: \"~a\"}, \"~a\")"
-           (remote-symbol web-contents) world-id code user-gesture)))
+   (format nil "~a.executeJavaScript(~a, {code: \"~a\"}, ~a)"
+           (remote-symbol web-contents) world-id (%quote-js code) user-gesture)))
 
 (export-always 'execute-javascript-with-promise-callback)
 (defmethod execute-javascript-with-promise-callback
@@ -202,7 +206,7 @@
           (lambda (args) (apply callback (cons web-contents args))))
     (send-message-interface
      (interface web-contents)
-     (format nil "~a.executeJavaScript(\"~a\", \"~a\").then((value) => {
+     (format nil "~a.executeJavaScript(\"~a\", ~a).then((value) => {
                    jsonString = JSON.stringify({ callback: ~a, value: value });
                    client.write(`${jsonString}\\n`);})"
-             (remote-symbol web-contents) code user-gesture identifier))))
+             (remote-symbol web-contents) (%quote-js code) user-gesture identifier))))
