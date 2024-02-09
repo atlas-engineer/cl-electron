@@ -16,4 +16,5 @@
     (electron::register-before-input-event win
                                            (lambda (win input)
                                              (declare (ignore win))
-                                             (print input)))))
+                                             (print input)))
+    win))
