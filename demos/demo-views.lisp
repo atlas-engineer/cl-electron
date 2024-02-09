@@ -45,10 +45,10 @@
             :height 30
             :height-p nil
             :vertical-p nil)
-  (electron::handle-callback (make-instance 'electron:protocol :scheme-name "lisp")
-                             (lambda (url)
-                               (declare (ignorable url))
-                               "Caution: Made with secret alien technology"))
+  (electron:handle-callback (make-instance 'electron:protocol :scheme-name "lisp")
+                            (lambda (url)
+                              (declare (ignorable url))
+                              "Caution: Made with secret alien technology"))
   (electron:load-url modeline "lisp:hello"))
 
 (define-class prompt (browser-view-bound-to-window) ())
