@@ -84,7 +84,10 @@ required to be registered there."))
                                  ,@(mapcar #'uiop:native-namestring
                                            (list (server-path interface)
                                                  (electron-socket-path interface))))
-                               :output :interactive))))
+                               :output :interactive))
+    ;; Block until the socket is ready and responding with evaluated code.
+    (loop for probe = (ignore-errors (send-message-interface interface "0"))
+          until (equalp "0" probe))))
 
 (defun create-socket-path (&key (prefix "cl-electron") (id (new-integer-id)))
   "Generate a new path suitable for a socket."
