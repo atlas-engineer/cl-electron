@@ -139,6 +139,7 @@ required to be registered there."))
 (export-always 'terminate)
 (defun terminate (&optional (interface *interface*))
   (when (and (process interface) (uiop:process-alive-p (process interface)))
+    (mapcar #'bt:destroy-thread (alexandria:hash-table-values (socket-threads interface)))
     (uiop:terminate-process (process interface))
     (setf (process interface) nil)))
 
