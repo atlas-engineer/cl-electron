@@ -90,7 +90,7 @@ required to be registered there."))
   "Generate a new path suitable for a socket."
   (uiop:native-namestring (uiop:xdg-runtime-dir (format nil "~a-~a.socket" prefix id))))
 
-(defun create-socket (callback &key (path (create-socket-path)))
+(defun create-socket (callback &key ready-semaphore (path (create-socket-path)))
   (unwind-protect
        (iolib:with-open-socket (s :address-family :local
                                   :connect :passive
@@ -99,6 +99,7 @@ required to be registered there."))
                (set-difference (iolib/os:file-permissions path)
                                '(:group-read :group-write :group-exec
                                  :other-read :other-write :other-exec)))
+         (when ready-semaphore (bt:signal-semaphore ready-semaphore))
          (iolib:with-accept-connection (connection s)
            (loop for expr = (read-line connection nil)
                  until (null expr)
@@ -111,22 +112,26 @@ required to be registered there."))
                           (finish-output connection)))))))
     (uiop:delete-file-if-exists path)))
 
-(defun create-socket-thread (callback &optional (interface *interface*))
+(defun create-socket-thread (callback &key ready-semaphore (interface *interface*))
   (let* ((id (new-id))
          (socket-path (uiop:native-namestring (create-socket-path :id id))))
     (setf (gethash id (socket-threads interface))
           (bordeaux-threads:make-thread
-           (lambda () (create-socket callback :path socket-path))))
+           (lambda () (create-socket callback
+                                     :path socket-path
+                                     :ready-semaphore ready-semaphore))))
     (values id socket-path)))
 
-(defun create-node-socket-thread (callback &optional (interface *interface*))
-  (multiple-value-bind (thread-id socket-path)
-      (create-socket-thread callback)
-    (send-message-interface
-     interface
-     (format nil "~a = new nodejs_net.Socket().connect('~a', () => { ~a.setNoDelay(true); });"
-             thread-id socket-path thread-id))
-    (values thread-id socket-path)))
+(defun create-node-socket-thread (callback &key (interface *interface*))
+  (let ((socket-ready-semaphore (bt:make-semaphore)))
+    (multiple-value-bind (thread-id socket-path)
+        (create-socket-thread callback :ready-semaphore socket-ready-semaphore)
+      (bt:wait-on-semaphore socket-ready-semaphore)
+      (send-message-interface
+       interface
+       (format nil "~a = new nodejs_net.Socket().connect('~a', () => { ~a.setNoDelay(true); });"
+               thread-id socket-path thread-id))
+      (values thread-id socket-path))))
 
 (export-always 'terminate)
 (defun terminate (&optional (interface *interface*))
