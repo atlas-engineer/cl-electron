@@ -8,28 +8,17 @@
 
 (define-class interface ()
   ((electron-socket-path
-    (uiop:xdg-runtime-dir "electron.socket")
+    (uiop:xdg-runtime-dir "cl-electron.socket")
     :export t
     :documentation "The Electron process listens to this sockets to execute
 JavaScript.
 For each instruction it writes the result back to this socket.")
-   (lisp-socket-path
-    (uiop:xdg-runtime-dir "lisp.socket")
-    :export t
-    :documentation "The Electron process may be instructed to write to this
-socket to execute Lisp side effects before returning the end result.")
-   (lisp-socket-lock
-    (bt:make-semaphore :name "electron-lisp-lock")
-    :documentation "Synchronize the Electron process creation with the `listener' creation.")
+   (socket-threads
+    (make-hash-table :test 'equalp)
+    :documentation "A list of threads connected to sockets used by the system.")
    (process
     nil
     :documentation "The Electron process.")
-   (listener
-    nil
-    :documentation "The thread that listens to `lisp-socket-path'.")
-   (callbacks
-    (make-hash-table)
-    :documentation "Callbacks to execute when the `listener' reads an instruction on the `lisp-socket-path'.")
    (protocols
     nil
     ;; The slot can't be set at initialization since protocol objects inherit
@@ -89,59 +78,70 @@ required to be registered there."))
 
 (export-always 'launch)
 (defun launch (&optional (interface *interface*))
-  (setf (listener interface) (bordeaux-threads:make-thread
-                              (lambda () (create-server interface))))
   (unless (alive-p interface)
-    (bt:wait-on-semaphore (lisp-socket-lock interface))
     (setf (process interface)
           (uiop:launch-program `("electron"
                                  ,@(mapcar #'uiop:native-namestring
                                            (list (server-path interface)
-                                                 (electron-socket-path interface)
-                                                 (lisp-socket-path interface))))
-                               :output :interactive))))
+                                                 (electron-socket-path interface))))
+                               :output :interactive))
+    ;; Block until the socket is ready and responding with evaluated code.
+    (loop for probe = (ignore-errors (send-message-interface interface "0"))
+          until (equalp "0" probe))))
 
-(defun create-server (&optional (interface *interface*))
+(defun create-socket-path (&key (prefix "cl-electron") (id (new-integer-id)))
+  "Generate a new path suitable for a socket."
+  (uiop:native-namestring (uiop:xdg-runtime-dir (format nil "~a-~a.socket" prefix id))))
+
+(defun create-socket (callback &key ready-semaphore (path (create-socket-path)))
   (unwind-protect
-       (let ((native-socket-path (uiop:native-namestring (lisp-socket-path interface))))
-         (iolib:with-open-socket (s :address-family :local
-                                    :connect :passive
-                                    :local-filename native-socket-path)
-           ;; We don't want group members or others to flood the socket or, worse,
-           ;; execute code.
-           (setf (iolib/os:file-permissions native-socket-path)
-                 (set-difference (iolib/os:file-permissions native-socket-path)
-                                 '(:group-read :group-write :group-exec
-                                   :other-read :other-write :other-exec)))
-           (bt:signal-semaphore (lisp-socket-lock interface))
-           (iolib:with-accept-connection (connection s)
-             (loop for expr = (read-line connection nil)
-                   until (null expr)
-                   do (unless (uiop:emptyp expr)
-                        (let ((dispatch-result (dispatch-callback expr interface)))
-                          (when (stringp dispatch-result)
-                            (write-line dispatch-result connection)
-                            (write-line "" connection)
-                            (finish-output connection))))))))
-    (uiop:delete-file-if-exists (lisp-socket-path interface))))
+       (iolib:with-open-socket (s :address-family :local
+                                  :connect :passive
+                                  :local-filename path)
+         (setf (iolib/os:file-permissions path)
+               (set-difference (iolib/os:file-permissions path)
+                               '(:group-read :group-write :group-exec
+                                 :other-read :other-write :other-exec)))
+         (when ready-semaphore (bt:signal-semaphore ready-semaphore))
+         (iolib:with-accept-connection (connection s)
+           (loop for expr = (read-line connection nil)
+                 until (null expr)
+                 do (unless (uiop:emptyp expr)
+                      (let* ((decoded-object (cl-json:decode-json-from-string expr))
+                             (callback-result (funcall callback decoded-object)))
+                        (when (stringp callback-result)
+                          (write-line callback-result connection)
+                          (write-line "" connection)
+                          (finish-output connection)))))))
+    (uiop:delete-file-if-exists path)))
 
-(defun dispatch-callback (json-string &optional (interface *interface*))
-  "Handle the callback."
-  (let* ((decoded-object (cl-json:decode-json-from-string json-string))
-         (callback-id (cdar decoded-object))
-         (callback (gethash callback-id (callbacks interface)))
-         (arguments-list (cdadr decoded-object)))
-    (funcall callback (list arguments-list))))
+(defun create-socket-thread (callback &key ready-semaphore (interface *interface*))
+  (let* ((id (new-id))
+         (socket-path (uiop:native-namestring (create-socket-path :id id))))
+    (setf (gethash id (socket-threads interface))
+          (bordeaux-threads:make-thread
+           (lambda () (create-socket callback
+                                     :path socket-path
+                                     :ready-semaphore ready-semaphore))))
+    (values id socket-path)))
+
+(defun create-node-socket-thread (callback &key (interface *interface*))
+  (let ((socket-ready-semaphore (bt:make-semaphore)))
+    (multiple-value-bind (thread-id socket-path)
+        (create-socket-thread callback :ready-semaphore socket-ready-semaphore)
+      (bt:wait-on-semaphore socket-ready-semaphore)
+      (send-message-interface
+       interface
+       (format nil "~a = new nodejs_net.Socket().connect('~a', () => { ~a.setNoDelay(true); });"
+               thread-id socket-path thread-id))
+      (values thread-id socket-path))))
 
 (export-always 'terminate)
 (defun terminate (&optional (interface *interface*))
   (when (and (process interface) (uiop:process-alive-p (process interface)))
+    (mapcar #'bt:destroy-thread (alexandria:hash-table-values (socket-threads interface)))
     (uiop:terminate-process (process interface))
-    (setf (process interface) nil))
-  (when (and (lisp-socket-path interface) (bt:thread-alive-p (listener interface)))
-    (bt:destroy-thread (listener interface))
-    (setf (listener interface) nil)
-    (uiop:delete-file-if-exists (lisp-socket-path interface))))
+    (setf (process interface) nil)))
 
 (defun send-message-interface (interface message)
   (iolib:with-open-socket (s :address-family :local

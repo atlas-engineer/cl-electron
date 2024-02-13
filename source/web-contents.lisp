@@ -201,12 +201,12 @@
 (export-always 'execute-javascript-with-promise-callback)
 (defmethod execute-javascript-with-promise-callback
     ((web-contents web-contents) code callback &key (user-gesture "false"))
-  (let ((identifier (new-integer-id)))
-    (setf (gethash identifier (callbacks (interface web-contents)))
-          (lambda (args) (apply callback (cons web-contents args))))
+  (let ((socket-thread-id
+          (create-node-socket-thread (lambda (args)
+                                       (apply callback (cons web-contents args))))))
     (send-message-interface
      (interface web-contents)
      (format nil "~a.executeJavaScript(\"~a\", ~a).then((value) => {
-                   jsonString = JSON.stringify({ callback: ~a, value: value });
-                   client.write(`${jsonString}\\n`);})"
-             (remote-symbol web-contents) (%quote-js code) user-gesture identifier))))
+                   jsonString = JSON.stringify([ value ]);
+                   ~a.write(`${jsonString}\\n`);})"
+             (remote-symbol web-contents) (%quote-js code) user-gesture socket-thread-id))))

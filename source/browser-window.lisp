@@ -14,19 +14,17 @@
 
 (export-always 'register-before-input-event)
 (defmethod register-before-input-event ((browser-window browser-window) callback)
-  (let ((identifier (new-integer-id)))
-    (setf (gethash identifier (callbacks (interface browser-window)))
-          (lambda (arguments-list)
-            (apply callback (cons browser-window arguments-list))))
+  (let ((socket-thread-id
+          (create-node-socket-thread (lambda (args)
+                                       (apply callback (cons browser-window args))))))
     (send-message-interface
      (interface browser-window)
      (format nil
              "~a.webContents.on('before-input-event', (event, input) => {
-               jsonString = JSON.stringify({ callback: ~a, input: input });
-               client.write(`${jsonString}\\n`);
-               event.preventDefault();})"
-             (remote-symbol browser-window)
-             identifier))))
+                jsonString = JSON.stringify([ input ]);
+                ~a.write(`${jsonString}\\n`);
+                event.preventDefault();})"
+             (remote-symbol browser-window) socket-thread-id))))
 
 (export-always 'load-url)
 (defmethod load-url ((browser-window browser-window) url)

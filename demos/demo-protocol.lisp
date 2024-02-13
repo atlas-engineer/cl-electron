@@ -18,8 +18,6 @@
                              :scheme-name "noplay"
                              :privileges "{stream:true}")))
   (electron:launch electron:*interface*)
-  ;; See https://github.com/atlas-engineer/cl-electron/issues/15
-  (sleep 1)
   (electron:handle (find "noplay" (electron:protocols electron:*interface*)
                          :key #'electron:scheme-name :test #'string-equal)
                    "() => {return net.fetch('https://www.learningcontainer.com/wp-content/uploads/2020/02/Kalimba.mp3')}")
