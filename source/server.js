@@ -25,3 +25,27 @@ const server = nodejs_net.createServer((socket) => {
     });
 });
 server.listen(process.argv[2]);
+
+////////////////////////////////////////////////////////////////////////////////
+// Handle long messages from a socket and combine them into a single message. //
+////////////////////////////////////////////////////////////////////////////////
+
+class ProtocolSocket {
+    constructor(socket, onDataFunction) {
+        this.socket = socket;
+        this.onDataFunction = onDataFunction;
+        this.messageBuffer = '';
+
+        this.socket.on('data', data => {
+            let dataString = data.toString();
+            let transmissionEndIndex = dataString.indexOf('');
+            if (transmissionEndIndex == -1) {
+                this.messageBuffer += dataString;
+            } else {
+                this.messageBuffer += dataString.substring(0, transmissionEndIndex);
+                this.onDataFunction(this.messageBuffer);
+                this.messageBuffer = dataString.substring(transmissionEndIndex + 1, dataString.length);
+            }
+        });
+    }
+}
