@@ -215,19 +215,17 @@
 (defmethod on ((web-contents web-contents) event-name code)
   (send-message-interface
    (interface web-contents)
-   (format nil "~a.on('~a', () => {~a})" (remote-symbol web-contents) event-name code)
-   :replace-newlines-p nil))
+   (format nil "~a.on('~a', () => {~a})" (remote-symbol web-contents) event-name code)))
 
 (export-always 'on-event)
 (defmethod on-event ((web-contents web-contents) event-name callback)
-  (let ((identifier (new-integer-id)))
-    (setf (gethash identifier (callbacks electron:*interface*))
-          (lambda (args)
-            (declare (ignore args))
-            (funcall callback web-contents) nil))
+  (let ((socket-thread-id
+          (create-node-socket-thread
+           (lambda (args)
+             (declare (ignore args))
+             (funcall callback web-contents)))))
     (on web-contents event-name
         (format nil
-                "jsonString = JSON.stringify({ callback: ~a });
-                 client.write(`${jsonString}\\n`);"
-                identifier))))
-======= end
+                "jsonString = JSON.stringify([]);
+                 ~a.write(`${jsonString}\\n`);"
+                socket-thread-id))))
