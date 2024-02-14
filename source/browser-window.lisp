@@ -15,8 +15,8 @@
 (export-always 'register-before-input-event)
 (defmethod register-before-input-event ((browser-window browser-window) callback)
   (let ((socket-thread-id
-          (create-node-socket-thread (lambda (args)
-                                       (apply callback (cons browser-window args))))))
+          (create-node-socket-thread (lambda (response)
+                                       (apply callback (cons browser-window response))))))
     (send-message-interface
      (interface browser-window)
      (format nil

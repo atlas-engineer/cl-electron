@@ -20,9 +20,9 @@
 (defmethod handle-callback ((protocol protocol) callback)
   (let ((socket-thread-id
           (create-node-socket-thread
-           (lambda (args)
+           (lambda (response)
             (cl-json:encode-json-to-string
-             (multiple-value-bind (data-string data-type) (apply callback args)
+             (multiple-value-bind (data-string data-type) (apply callback response)
                (list (cons "dataString" data-string)
                      (cons "dataType" (or data-type "text/html;charset=utf8")))))))))
     (handle protocol

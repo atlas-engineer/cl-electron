@@ -202,8 +202,8 @@
 (defmethod execute-javascript-with-promise-callback
     ((web-contents web-contents) code callback &key (user-gesture "false"))
   (let ((socket-thread-id
-          (create-node-socket-thread (lambda (args)
-                                       (apply callback (cons web-contents args))))))
+          (create-node-socket-thread (lambda (response)
+                                       (apply callback (cons web-contents response))))))
     (send-message-interface
      (interface web-contents)
      (format nil "~a.executeJavaScript(\"~a\", ~a).then((value) => {
@@ -220,8 +220,8 @@
 (export-always 'on-event)
 (defmethod on-event ((web-contents web-contents) event-name callback)
   (let ((socket-thread-id
-          (create-node-socket-thread (lambda (args)
-                                       (declare (ignore args))
+          (create-node-socket-thread (lambda (response)
+                                       (declare (ignore response))
                                        (funcall callback web-contents)))))
     (on web-contents event-name
         (format nil
