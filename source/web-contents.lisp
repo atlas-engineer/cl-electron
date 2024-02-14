@@ -187,7 +187,7 @@
 (defmethod execute-javascript ((web-contents web-contents) code &key (user-gesture "false"))
   (send-message-interface
    (interface web-contents)
-   (format nil "~a.executeJavaScript(\"~a\", ~a)"
+   (format nil "~a.executeJavaScript(`~a`, ~a)"
            (remote-symbol web-contents) (%quote-js code) user-gesture)))
 
 (export-always 'execute-javascript-in-isolated-world)
@@ -195,7 +195,7 @@
                                                  &key (user-gesture "false"))
   (send-message-interface
    (interface web-contents)
-   (format nil "~a.executeJavaScript(~a, {code: \"~a\"}, ~a)"
+   (format nil "~a.executeJavaScript(~a, {code: `~a`}, ~a)"
            (remote-symbol web-contents) world-id (%quote-js code) user-gesture)))
 
 (export-always 'execute-javascript-with-promise-callback)
@@ -206,7 +206,7 @@
                                        (apply callback (cons web-contents response))))))
     (send-message-interface
      (interface web-contents)
-     (format nil "~a.executeJavaScript(\"~a\", ~a).then((value) => {
+     (format nil "~a.executeJavaScript(`~a`, ~a).then((value) => {
                    jsonString = JSON.stringify([ value ]);
                    ~a.write(`${jsonString}\\n`);})"
              (remote-symbol web-contents) (%quote-js code) user-gesture socket-thread-id))))
