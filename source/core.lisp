@@ -176,7 +176,11 @@ required to be registered there."))
     :reader t
     :writer nil
     :type interface
-    :documentation "The Electron `interface' the object will use for its whole lifetime."))
+    :documentation "The Electron `interface' the object will use for its whole lifetime.")
+   (socket-threads
+    '()
+    :export t
+    :documentation "A list of threads connected to sockets used by this object."))
   (:documentation "Represent objects living in Electron."))
 
 
