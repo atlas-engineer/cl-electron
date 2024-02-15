@@ -7,10 +7,14 @@
 (in-package :electron)
 
 (define-class interface ()
-  ((electron-socket-path
-    (uiop:xdg-runtime-dir "cl-electron.socket")
+  ((socket-directory
+    (ensure-directories-exist (uiop:xdg-runtime-dir "cl-electron/"))
     :export t
-    :documentation "The Electron process listens to this sockets to execute
+    :documentation "The directory where sockets for cl-electron are stored.")
+   (electron-socket-path
+    (uiop:xdg-runtime-dir "cl-electron/electron.socket")
+    :export t
+    :documentation "The Electron process listens to this socket to execute
 JavaScript.
 For each instruction it writes the result back to this socket.")
    (socket-threads
@@ -91,7 +95,7 @@ required to be registered there."))
 
 (defun create-socket-path (&key (prefix "cl-electron") (id (new-integer-id)))
   "Generate a new path suitable for a socket."
-  (uiop:native-namestring (uiop:xdg-runtime-dir (format nil "~a-~a.socket" prefix id))))
+  (uiop:native-namestring (uiop:xdg-runtime-dir (format nil "~a/~a.socket" prefix id))))
 
 (defun create-socket (callback &key ready-semaphore (path (create-socket-path)))
   (unwind-protect
