@@ -121,24 +121,25 @@ required to be registered there."))
 
 (defun create-socket-thread (callback &key ready-semaphore (interface *interface*))
   (let* ((id (new-id))
-         (socket-path (uiop:native-namestring (create-socket-path :id id))))
-    (setf (gethash id (socket-threads interface))
-          (bordeaux-threads:make-thread
-           (lambda () (create-socket callback
-                                     :path socket-path
-                                     :ready-semaphore ready-semaphore))))
-    (values id socket-path)))
+         (socket-path (uiop:native-namestring (create-socket-path :id id)))
+         (socket-thread (bordeaux-threads:make-thread
+                         (lambda ()
+                           (create-socket callback
+                                          :path socket-path
+                                          :ready-semaphore ready-semaphore)))))
+    (push socket-thread (socket-threads interface))
+    (values id socket-thread socket-path)))
 
 (defun create-node-socket-thread (callback &key (interface *interface*))
   (let ((socket-ready-semaphore (bt:make-semaphore)))
-    (multiple-value-bind (thread-id socket-path)
+    (multiple-value-bind (thread-id socket-thread socket-path)
         (create-socket-thread callback :ready-semaphore socket-ready-semaphore)
       (bt:wait-on-semaphore socket-ready-semaphore)
       (send-message-interface
        interface
        (format nil "~a = new nodejs_net.Socket().connect('~a', () => { ~a.setNoDelay(true); });"
                thread-id socket-path thread-id))
-      (values thread-id socket-path))))
+      (values thread-id socket-thread socket-path))))
 
 (export-always 'terminate)
 (defun terminate (&optional (interface *interface*))
