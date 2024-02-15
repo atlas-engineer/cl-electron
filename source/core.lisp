@@ -18,7 +18,7 @@
 JavaScript.
 For each instruction it writes the result back to this socket.")
    (socket-threads
-    (make-hash-table :test 'equalp)
+    '()
     :documentation "A list of threads connected to sockets used by the system.")
    (process
     nil
@@ -143,7 +143,7 @@ required to be registered there."))
 (export-always 'terminate)
 (defun terminate (&optional (interface *interface*))
   (when (and (process interface) (uiop:process-alive-p (process interface)))
-    (mapcar #'bt:destroy-thread (alexandria:hash-table-values (socket-threads interface)))
+    (mapcar #'bt:destroy-thread (socket-threads interface))
     (uiop:terminate-process (process interface))
     (setf (process interface) nil)))
 
