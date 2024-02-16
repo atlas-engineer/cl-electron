@@ -19,7 +19,8 @@
 (export-always 'handle-callback)
 (defmethod handle-callback ((protocol protocol) callback)
   (let ((socket-thread-id
-          (create-node-socket-thread
+          (bind-node-socket-thread
+           protocol
            (lambda (response)
             (cl-json:encode-json-to-string
              (multiple-value-bind (data-string data-type) (apply callback response)

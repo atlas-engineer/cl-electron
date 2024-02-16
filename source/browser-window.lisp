@@ -14,7 +14,8 @@
 (export-always 'register-before-input-event)
 (defmethod register-before-input-event ((browser-window browser-window) callback)
   (let ((synchronous-socket-id
-          (create-node-synchronous-socket-thread
+          (bind-node-synchronous-socket-thread
+           browser-window
            (lambda (response)
              (cl-json:encode-json-to-string
               (list (cons "preventDefault"
