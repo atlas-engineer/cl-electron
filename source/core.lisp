@@ -181,8 +181,19 @@ required to be registered there."))
     '()
     :export t
     :documentation "A list of threads connected to sockets used by this object."))
+  (:export-class-name-p t)
   (:documentation "Represent objects living in Electron."))
 
+(defmethod bind-node-socket-thread ((object remote-object) callback)
+  "Create a socket thread, and bind it to this object.
+
+When this object is garbage collected, destroy any threads this object
+may have created."
+  (multiple-value-bind (thread-id socket-thread socket-path)
+      (create-node-socket-thread callback :interface (interface object))
+    (push socket-thread (socket-threads object))
+    (trivial-garbage:finalize object (lambda () (bt:destroy-thread socket-thread)))
+    (values thread-id socket-thread socket-path)))
 
 (define-class browser-view (remote-object)
   ()
