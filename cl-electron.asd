@@ -17,7 +17,8 @@
                cl-ppcre
                nclasses
                bordeaux-threads
-               lparallel)
+               lparallel
+               trivial-garbage)
   :components ((:module "source"
                 :components
                 ((:file "package")
