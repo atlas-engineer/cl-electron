@@ -76,7 +76,7 @@
   (electron:load-url prompt "about:blank"))
 
 (defun electron-views-demo ()
- (setf electron:*interface* (make-instance 'electron:interface))
+  (setf electron:*interface* (make-instance 'electron:interface))
   (electron:launch)
   (let ((win (make-instance 'electron:browser-window :options "{frame: false}")))
     (values (make-instance 'main-view :parent-window win)
