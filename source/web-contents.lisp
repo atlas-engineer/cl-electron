@@ -210,3 +210,21 @@
                    jsonString = JSON.stringify([ value ]);
                    ~a.write(`${jsonString}\\n`);})"
              (remote-symbol web-contents) (%quote-js code) user-gesture socket-thread-id))))
+
+(export-always 'on)
+(defmethod on ((web-contents web-contents) event-name code)
+  (send-message-interface
+   (interface web-contents)
+   (format nil "~a.on('~a', () => {~a})" (remote-symbol web-contents) event-name code)))
+
+(export-always 'on-event)
+(defmethod on-event ((web-contents web-contents) event-name callback)
+  (let ((socket-thread-id
+          (create-node-socket-thread (lambda (args)
+                                       (declare (ignore args))
+                                       (funcall callback web-contents)))))
+    (on web-contents event-name
+        (format nil
+                "jsonString = JSON.stringify([]);
+                 ~a.write(`${jsonString}\\n`);"
+                socket-thread-id))))
