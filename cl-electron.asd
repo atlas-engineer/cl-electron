@@ -30,6 +30,7 @@
 (defsystem "cl-electron/demos"
   :pathname "demos"
   :depends-on (cl-electron)
-  :components ((:file "demo-window")
+  :components ((:file "package")
+               (:file "demo-window")
                (:file "demo-views")
                (:file "demo-protocol")))

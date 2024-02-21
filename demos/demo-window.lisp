@@ -1,10 +1,7 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :electron/demo
-  (:nicknames :cl-electron/demo))
-
-(in-package :electron/demo)
+(in-package :electron/demos)
 
 (defun electron-window-demo ()
   (setf electron:*interface* (make-instance 'electron:interface))

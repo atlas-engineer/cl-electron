@@ -1,11 +1,7 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :electron/demo
-  (:nicknames :cl-electron/demo)
-  (:import-from :nclasses :define-class))
-
-(in-package :electron/demo)
+(in-package :electron/demos)
 
 (define-class browser-view-bound-to-window (electron:browser-view)
   ((parent-window (error "Slot `parent-window' must be set."))))
