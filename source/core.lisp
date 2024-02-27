@@ -122,7 +122,7 @@ required to be registered there."))
 (defun create-socket-thread (callback &key ready-semaphore (interface *interface*))
   (let* ((id (new-id))
          (socket-path (uiop:native-namestring (create-socket-path :id id)))
-         (socket-thread (bordeaux-threads:make-thread
+         (socket-thread (bt:make-thread
                          (lambda ()
                            (create-socket callback
                                           :path socket-path
