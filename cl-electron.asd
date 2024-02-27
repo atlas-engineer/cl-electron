@@ -17,7 +17,8 @@
                cl-ppcre
                nclasses
                parenscript
-               bordeaux-threads)
+               bordeaux-threads
+               trivial-garbage)
   :components ((:module "source"
                 :components
                 ((:file "package")
