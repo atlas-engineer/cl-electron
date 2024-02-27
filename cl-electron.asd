@@ -16,7 +16,6 @@
                str
                cl-ppcre
                nclasses
-               parenscript
                bordeaux-threads
                lparallel)
   :components ((:module "source"
@@ -31,7 +30,7 @@
 
 (defsystem "cl-electron/tests"
   :pathname "tests"
-  :depends-on (cl-electron lisp-unit2 spinneret)
+  :depends-on (cl-electron lisp-unit2 spinneret parenscript)
   :components ((:file "tests"))
   :perform (test-op (op c)
                     (eval-input
