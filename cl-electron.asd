@@ -18,7 +18,8 @@
                nclasses
                parenscript
                bordeaux-threads
-               trivial-garbage)
+               trivial-garbage
+               lparallel)
   :components ((:module "source"
                 :components
                 ((:file "package")
