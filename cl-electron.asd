@@ -17,7 +17,8 @@
                cl-ppcre
                nclasses
                parenscript
-               bordeaux-threads)
+               bordeaux-threads
+               lparallel)
   :components ((:module "source"
                 :components
                 ((:file "package")

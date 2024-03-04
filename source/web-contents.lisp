@@ -230,3 +230,18 @@
                 "jsonString = JSON.stringify([]);
                  ~a.write(`${jsonString}\\n`);"
                 socket-thread-id))))
+
+(export-always 'execute-javascript-synchronous)
+(defmethod execute-javascript-synchronous ((web-contents web-contents) code
+                                           &key (user-gesture "false"))
+  (let ((p (lparallel:promise)))
+    (execute-javascript-with-promise-callback
+     web-contents
+     code
+     (lambda (web-contents result)
+       (declare (ignore web-contents))
+       (if (equal result "ERROR")
+           (cerror "Ignore JS error." (make-condition 'javascript-renderer-error :code code))
+           (lparallel:fulfill p result)))
+     :user-gesture user-gesture)
+    (lparallel:force p)))
