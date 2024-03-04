@@ -32,13 +32,10 @@
                      (lambda (web-contents)
                        (setf (url main-view) (electron:get-url web-contents))
                        (format t "I have loaded ~a!" (url main-view))))
-  (electron:execute-javascript-with-promise-callback
-   (electron:web-contents main-view)
-   "1 + 1"
-   (lambda (web-contents result)
-     (declare (ignore web-contents))
-     (format t "~%1 + 1 = ~a" result)))
-  (electron:load-url main-view "https://en.wikipedia.org/wiki/Electron"))
+  (electron:load-url main-view "https://en.wikipedia.org/wiki/Electron")
+  (print (electron:execute-javascript-synchronous
+          (electron:web-contents main-view)
+          "1 + 1")))
 
 (define-class modeline (browser-view-bound-to-window) ())
 
