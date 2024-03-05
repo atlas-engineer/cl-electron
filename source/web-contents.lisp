@@ -207,9 +207,11 @@
     (send-message-interface
      (interface web-contents)
      (format nil "~a.executeJavaScript(\"~a\", ~a).then((value) => {
-                   jsonString = JSON.stringify([ value ]);
-                   ~a.write(`${jsonString}\\n`);})"
-             (remote-symbol web-contents) (%quote-js code) user-gesture socket-thread-id))))
+                     jsonString = JSON.stringify([ value ]);
+                     ~a.write(`${jsonString}\\n`);}).catch(error => {
+                       ~a.write('[\"ERROR\"]\\n');});"
+             (remote-symbol web-contents) (%quote-js code)
+             user-gesture socket-thread-id socket-thread-id))))
 
 (export-always 'on)
 (defmethod on ((web-contents web-contents) event-name code)
