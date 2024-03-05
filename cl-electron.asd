@@ -22,6 +22,7 @@
   :components ((:module "source"
                 :components
                 ((:file "package")
+                 (:file "condition" :depends-on ("package"))
                  (:file "core" :depends-on ("package"))
                  (:file "browser-window" :depends-on ("package" "core"))
                  (:file "browser-view" :depends-on ("package" "core"))
