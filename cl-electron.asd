@@ -16,7 +16,6 @@
                str
                cl-ppcre
                nclasses
-               parenscript
                bordeaux-threads
                lparallel)
   :components ((:module "source"
@@ -26,7 +25,18 @@
                  (:file "browser-window" :depends-on ("package" "core"))
                  (:file "browser-view" :depends-on ("package" "core"))
                  (:file "web-contents" :depends-on ("package" "core"))
-                 (:file "protocol" :depends-on ("package" "core"))))))
+                 (:file "protocol" :depends-on ("package" "core")))))
+  :in-order-to ((test-op (test-op "cl-electron/tests"))))
+
+(defsystem "cl-electron/tests"
+  :pathname "tests"
+  :depends-on (cl-electron lisp-unit2 spinneret parenscript)
+  :components ((:file "tests"))
+  :perform (test-op (op c)
+                    (eval-input
+                     "(lisp-unit2:run-tests
+                       :package :electron/tests
+                       :run-contexts #'lisp-unit2:with-summary-context)")))
 
 (defsystem "cl-electron/demos"
   :pathname "demos"
