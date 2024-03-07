@@ -210,9 +210,11 @@
     (send-message-interface
      (interface web-contents)
      (format nil "~a.executeJavaScript(`~a`, ~a).then((value) => {
-                   jsonString = JSON.stringify([ value ]);
-                   ~a.write(`${jsonString}\\n`);})"
-             (remote-symbol web-contents) (%quote-js code) user-gesture socket-thread-id))))
+                    jsonString = JSON.stringify([ value ]);
+                    ~a.write(`${jsonString}\\n`);}).catch(error => {
+                      ~a.write('[\"ERROR\"]\\n');});"
+             (remote-symbol web-contents) (%quote-js code) user-gesture
+             socket-thread-id socket-thread-id))))
 
 (export-always 'on)
 (defmethod on ((web-contents web-contents) event-name code)
@@ -241,6 +243,14 @@
      code
      (lambda (web-contents result)
        (declare (ignore web-contents))
-       (lparallel:fulfill p result))
+       (if (equal result "ERROR")
+           (restart-case (error (make-condition 'javascript-renderer-error :code code))
+             (ignore ()
+               :report "Ignore error, fulfill promise with string 'ERROR'."
+               (lparallel:fulfill p result))
+             (reject ()
+               :report "Return nil, indicating promise rejection."
+               (lparallel:fulfill p nil)))
+           (lparallel:fulfill p result)))
      :user-gesture user-gesture)
     (lparallel:force p)))
