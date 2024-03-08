@@ -8,7 +8,7 @@
   (electron:launch)
   (let ((win (make-instance 'electron:browser-window)))
     (electron:load-url win "https://en.wikipedia.org/wiki/Electron")
-    (electron::register-before-input-event win
+    (electron:register-before-input-event win
                                            (lambda (win input)
                                              (declare (ignore win))
                                              (print input)))
