@@ -168,6 +168,7 @@ required to be registered there."))
 (define-class remote-object ()
   ((remote-symbol
     (new-id)
+    :export t
     :reader t
     :writer nil
     :documentation "The variable name used on the remotely running NodeJS system.")
@@ -181,6 +182,7 @@ required to be registered there."))
     '()
     :export t
     :documentation "A list of threads connected to sockets used by this object."))
+  (:export-class-name-p t)
   (:documentation "Represent objects living in Electron."))
 
 
