@@ -60,7 +60,7 @@ required to be registered there."))
   (uiop:with-temporary-file (:pathname p :keep t)
     (uiop:copy-file pathname p)
     (str:to-file p s :if-exists :append)
-    (uiop:native-namestring p)))
+    p))
 
 (defmethod (setf protocols) (value (interface interface))
   (if (alive-p interface)
