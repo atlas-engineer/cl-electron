@@ -57,7 +57,7 @@ required to be registered there."))
 
 (defun to-tmp-file (pathname s)
   "Return the pathname of tmp file featuring the concatenation of file PATHNAME and string S."
-  (uiop:with-temporary-file (:pathname p :keep t)
+  (uiop:with-temporary-file (:pathname p :keep t :type "js")
     (uiop:copy-file pathname p)
     (str:to-file p s :if-exists :append)
     p))
