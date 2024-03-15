@@ -171,7 +171,7 @@ required to be registered there."))
     :export t
     :reader t
     :writer nil
-    :documentation "The variable name used on the remotely running NodeJS system.")
+    :documentation "The variable name used on the remotely running Node.js system.")
    (interface
     *interface*
     :reader t

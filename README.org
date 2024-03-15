@@ -1,7 +1,7 @@
 #+TITLE: cl-electron - Electron binding for Common Lisp
 
 * Installation
-=cl-electron= depends on Electron, NodeJS, a Common Lisp implementation
+=cl-electron= depends on Electron, Node.js, a Common Lisp implementation
 (SBCL) and some CL libraries (consult [[file:cl-electron.asd][cl-electron.asd file]]).
 
 ** Nix + Quicklisp
