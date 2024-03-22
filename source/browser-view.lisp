@@ -60,6 +60,20 @@ See `set-bounds' for the list of available parameters."
                    :remote-symbol new-id
                    :interface (interface browser-view))))
 
+(export-always 'register-before-input-event)
+(defmethod register-before-input-event ((browser-view browser-view) callback)
+  (let ((socket-thread-id
+          (create-node-socket-thread (lambda (response)
+                                       (apply callback (cons browser-view response))))))
+    (send-message-interface
+     (interface browser-view)
+     (format nil
+             "~a.webContents.on('before-input-event', (event, input) => {
+                jsonString = JSON.stringify([ input ]);
+                ~a.write(`${jsonString}\\n`);
+                event.preventDefault();})"
+             (remote-symbol browser-view) socket-thread-id))))
+
 ;; Helpers
 
 (export-always 'load-url)
