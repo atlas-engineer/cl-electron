@@ -6,7 +6,7 @@
 (in-package :electron)
 
 (defmethod initialize-instance :after ((browser-window browser-window)
-                                       &key (options "{frame: true}"))
+                                       &key (options "{frame: true, autoHideMenuBar: true}"))
   (send-message-interface
    (interface browser-window)
    (format nil "~a = new BrowserWindow(~a);"
