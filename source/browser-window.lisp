@@ -86,6 +86,12 @@
    (interface browser-window)
    (format nil "~a.focus()" (remote-symbol browser-window))))
 
+(export-always 'remove-menu)
+(defmethod remove-menu ((browser-window browser-window))
+  (send-message-interface
+   (interface browser-window)
+   (format nil "~a.removeMenu()" (remote-symbol browser-window))))
+
 (export-always 'get-bounds)
 (defmethod get-bounds ((browser-window browser-window) parameter)
   "Return Rectangle Object's PARAMETER of BROWSER-WINDOW.
