@@ -14,17 +14,19 @@ const { app, ipcMain, BrowserView, BrowserWindow, webContents, protocol, net } =
 const path = require('path')
 const nodejs_net = require('net');
 
-const server = nodejs_net.createServer((socket) => {
-    socket.on('data', (data) => {
-        try {
-            const result = eval(data.toString());
-            socket.write(`${result}\n`);
-        } catch (err) {
-            socket.write(`${err}\n`);
-        }
+app.on('ready', () => {
+    const server = nodejs_net.createServer((socket) => {
+        socket.on('data', (data) => {
+            try {
+                const result = eval(data.toString());
+                socket.write(`${result}\n`);
+            } catch (err) {
+                socket.write(`${err}\n`);
+            }
+        });
     });
+    server.listen(process.argv[2]);
 });
-server.listen(process.argv[2]);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Handle long messages from a socket and combine them into a single message. //
