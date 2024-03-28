@@ -13,6 +13,7 @@ if (process.argv.length != 3) {
 const { app, ipcMain, BrowserView, BrowserWindow, webContents, protocol, net } = require('electron')
 const path = require('path')
 const nodejs_net = require('net');
+const childProcess = require('child_process');
 
 app.on('ready', () => {
     const server = nodejs_net.createServer((socket) => {
@@ -49,5 +50,27 @@ class ProtocolSocket {
                 this.messageBuffer = dataString.substring(transmissionEndIndex + 1, dataString.length);
             }
         });
+    }
+}
+
+////////////////////////////////////////////////
+// Read messages from a socket synchronously. //
+////////////////////////////////////////////////
+
+class SynchronousSocket {
+    constructor(path, data) {
+        this.path = path;
+        this.data = data;
+    }
+    request () {
+        var response = childProcess.execFileSync("electron", [ __dirname + "/query.js" ], {
+            env: {
+                SOCKET_PATH: this.path,
+                SOCKET_DATA: this.data,
+                // Path required, otherwise the child process will fail.
+                PATH: process.env.PATH,
+            },
+        });
+        return response;
     }
 }

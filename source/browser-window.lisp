@@ -14,17 +14,23 @@
 
 (export-always 'register-before-input-event)
 (defmethod register-before-input-event ((browser-window browser-window) callback)
-  (let ((socket-thread-id
-          (create-node-socket-thread (lambda (response)
-                                       (apply callback (cons browser-window response))))))
+  (let* ((socket-ready-semaphore (bt:make-semaphore))
+         (socket-path (nth-value 2 (create-socket-thread
+                                    (lambda (response)
+                                      (cl-json:encode-json-to-string
+                                       (list (cons "preventDefault"
+                                                   (apply callback (cons browser-window response))))))
+                                    :ready-semaphore socket-ready-semaphore))))
+    (bt:wait-on-semaphore socket-ready-semaphore)
     (send-message-interface
      (interface browser-window)
      (format nil
              "~a.webContents.on('before-input-event', (event, input) => {
-                jsonString = JSON.stringify([ input ]);
-                ~a.write(`${jsonString}\\n`);
-                event.preventDefault();})"
-             (remote-symbol browser-window) socket-thread-id))))
+                  jsonString = JSON.stringify([ input ]);
+                  response = new SynchronousSocket('~a', jsonString).request();
+                  console.log(response.toString());
+              })"
+             (remote-symbol browser-window) socket-path))))
 
 (export-always 'load-url)
 (defmethod load-url ((browser-window browser-window) url)
