@@ -47,11 +47,18 @@ The slot can only be set before invoking `launch'.")
     :reader t
     :writer nil
     :type pathname
-    :documentation "The path to a JS file that specifies the IPC mechanism.
+    :documentation "The path to a JavaScript file that specifies the IPC mechanism.
 
 All of its content is evaluated before the app signals the ready event.  Not
 meant to be overwritten but rather appended.  For instance, `protocols' are
-required to be registered there."))
+required to be registered there.")
+   (query-path
+    (asdf:system-relative-pathname :cl-electron "source/query.js")
+    :export t
+    :reader t
+    :writer nil
+    :type pathname
+    :documentation "The path to a JavaScript file that is used for synchronous IPC."))
   (:export-class-name-p t)
   (:predicate-name-transformer 'nclasses:always-dashed-predicate-name-transformer)
   (:documentation "Interface with an Electron instance."))
@@ -61,7 +68,7 @@ required to be registered there."))
   (with-slots (process) interface
     (and process (uiop:process-alive-p process))))
 
-(defun to-tmp-file (pathname s)
+(defun to-tmp-file (pathname &optional s)
   "Return the pathname of tmp file featuring the concatenation of file PATHNAME and string S."
   (uiop:with-temporary-file (:pathname p :keep t :type "js")
     (uiop:copy-file pathname p)
@@ -71,9 +78,10 @@ required to be registered there."))
 (defmethod (setf protocols) (value (interface interface))
   (if (alive-p interface)
       (error "Protocols need to be set before launching ~a." interface)
-      (with-slots (protocols server-path) interface
+      (with-slots (protocols server-path query-path) interface
         (setf protocols value)
-        (setf server-path (to-tmp-file server-path (register protocols))))))
+        (setf server-path (to-tmp-file server-path (register protocols)))
+        (setf query-path (to-tmp-file query-path)))))
 
 (defmethod interface-equal ((interface1 interface) (interface2 interface))
   "Return non-nil when interfaces are equal."
