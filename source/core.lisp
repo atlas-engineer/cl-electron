@@ -115,7 +115,9 @@ required to be registered there.")
   (uiop:native-namestring
    (pathname (format nil "~~/Library/Caches/TemporaryItems/~a/~a.socket" prefix id))))
 
-(defun create-socket (callback &key ready-semaphore (path (create-socket-path)))
+(defun create-socket (callback &key ready-semaphore
+                                    (path (create-socket-path))
+                                    (loop-connect-p t))
   (unwind-protect
        (iolib:with-open-socket (s :address-family :local
                                   :connect :passive
@@ -125,33 +127,40 @@ required to be registered there.")
                                '(:group-read :group-write :group-exec
                                  :other-read :other-write :other-exec)))
          (when ready-semaphore (bt:signal-semaphore ready-semaphore))
-         (iolib:with-accept-connection (connection s)
-           (loop for expr = (read-line connection nil)
-                 until (null expr)
-                 do (unless (uiop:emptyp expr)
-                      (let* ((decoded-object (cl-json:decode-json-from-string expr))
-                             (callback-result (funcall callback decoded-object)))
-                        (when (stringp callback-result)
-                          (write-line callback-result connection)
-                          (write-line "" connection)
-                          (finish-output connection)))))))
+         (loop do (iolib:with-accept-connection (connection s)
+                    (loop for expr = (read-line connection nil)
+                          until (null expr)
+                          do (unless (uiop:emptyp expr)
+                               (let* ((decoded-object (cl-json:decode-json-from-string expr))
+                                      (callback-result (funcall callback decoded-object)))
+                                 (when (stringp callback-result)
+                                   (write-line callback-result connection)
+                                   (write-line "" connection)
+                                   (finish-output connection))))))
+               while loop-connect-p))
     (uiop:delete-file-if-exists path)))
 
-(defun create-socket-thread (callback &key ready-semaphore (interface *interface*))
+(defun create-socket-thread (callback &key ready-semaphore
+                                           (interface *interface*)
+                                           (loop-connect-p t))
   (let* ((id (new-id))
          (socket-path (uiop:native-namestring (create-socket-path :id id)))
          (socket-thread (bt:make-thread
                          (lambda ()
                            (create-socket callback
                                           :path socket-path
-                                          :ready-semaphore ready-semaphore)))))
+                                          :ready-semaphore ready-semaphore
+                                          :loop-connect-p loop-connect-p)))))
     (push socket-thread (socket-threads interface))
     (values id socket-thread socket-path)))
 
-(defun create-node-socket-thread (callback &key (interface *interface*))
+(defun create-node-socket-thread (callback &key (interface *interface*)
+                                                (loop-connect-p nil))
   (let ((socket-ready-semaphore (bt:make-semaphore)))
     (multiple-value-bind (thread-id socket-thread socket-path)
-        (create-socket-thread callback :ready-semaphore socket-ready-semaphore)
+        (create-socket-thread callback
+                              :ready-semaphore socket-ready-semaphore
+                              :loop-connect-p loop-connect-p)
       (bt:wait-on-semaphore socket-ready-semaphore)
       (send-message-interface
        interface
