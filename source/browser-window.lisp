@@ -14,17 +14,24 @@
 
 (export-always 'register-before-input-event)
 (defmethod register-before-input-event ((browser-window browser-window) callback)
-  (let ((socket-thread-id
-          (create-node-socket-thread (lambda (response)
-                                       (apply callback (cons browser-window response))))))
+  (let ((synchronous-socket-id
+          (create-node-synchronous-socket-thread
+           (lambda (response)
+             (cl-json:encode-json-to-string
+              (list (cons "preventDefault"
+                          (not (null (apply callback (cons browser-window response))))))))
+           :interface (interface browser-window)
+           :loop-connect-p t)))
     (send-message-interface
      (interface browser-window)
      (format nil
              "~a.webContents.on('before-input-event', (event, input) => {
-                jsonString = JSON.stringify([ input ]);
-                ~a.write(`${jsonString}\\n`);
-                event.preventDefault();})"
-             (remote-symbol browser-window) socket-thread-id))))
+                  response = ~a.request(JSON.stringify([ input ]));
+                  if (JSON.parse(response.toString()).preventDefault) {
+                    event.preventDefault();
+                  }
+                })"
+             (remote-symbol browser-window) synchronous-socket-id))))
 
 (export-always 'load-url)
 (defmethod load-url ((browser-window browser-window) url)

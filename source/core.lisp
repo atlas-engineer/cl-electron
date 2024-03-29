@@ -168,6 +168,23 @@ required to be registered there.")
                thread-id socket-path thread-id))
       (values thread-id socket-thread socket-path))))
 
+(defun create-node-synchronous-socket-thread (callback &key (interface *interface*)
+                                                       (loop-connect-p nil))
+  "Caution: SynchronousSocket blocks Node.js and can lead to deadlocks."
+  (let ((socket-ready-semaphore (bt:make-semaphore)))
+    (multiple-value-bind (thread-id socket-thread socket-path)
+        (create-socket-thread
+         callback
+         :ready-semaphore socket-ready-semaphore
+         :loop-connect-p loop-connect-p)
+      (bt:wait-on-semaphore socket-ready-semaphore)
+      (send-message-interface
+       interface
+       (format nil
+               "~a = new SynchronousSocket('~a', '~a');"
+               thread-id  socket-path (query-path interface)))
+      (values thread-id socket-thread socket-path))))
+
 (export-always 'terminate)
 (defun terminate (&optional (interface *interface*))
   (when (and (process interface) (uiop:process-alive-p (process interface)))
@@ -212,6 +229,8 @@ required to be registered there.")
   (:export-class-name-p t)
   (:documentation "Represent objects living in Electron."))
 
+(defmethod send-message ((remote-object remote-object) message)
+  (send-message-interface (interface remote-object) message))
 
 (define-class browser-view (remote-object)
   ()

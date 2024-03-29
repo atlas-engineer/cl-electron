@@ -62,17 +62,24 @@ See `set-bounds' for the list of available parameters."
 
 (export-always 'register-before-input-event)
 (defmethod register-before-input-event ((browser-view browser-view) callback)
-  (let ((socket-thread-id
-          (create-node-socket-thread (lambda (response)
-                                       (apply callback (cons browser-view response))))))
+  (let ((synchronous-socket-id
+          (create-node-synchronous-socket-thread
+           (lambda (response)
+             (cl-json:encode-json-to-string
+              (list (cons "preventDefault"
+                          (not (null (apply callback (cons browser-view response))))))))
+           :interface (interface browser-view)
+           :loop-connect-p t)))
     (send-message-interface
      (interface browser-view)
      (format nil
              "~a.webContents.on('before-input-event', (event, input) => {
-                jsonString = JSON.stringify([ input ]);
-                ~a.write(`${jsonString}\\n`);
-                event.preventDefault();})"
-             (remote-symbol browser-view) socket-thread-id))))
+                  response = ~a.request(JSON.stringify([ input ]));
+                  if (JSON.parse(response.toString()).preventDefault) {
+                    event.preventDefault();
+                  }
+                })"
+             (remote-symbol browser-view) synchronous-socket-id))))
 
 ;; Helpers
 
