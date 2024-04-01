@@ -104,7 +104,7 @@ required to be registered there.")
                                                  (electron-socket-path interface))))
                                :output :interactive))
     ;; Block until the socket is ready and responding with evaluated code.
-    (loop for probe = (ignore-errors (send-message-interface interface "0"))
+    (loop for probe = (ignore-errors (message interface "0"))
           until (equalp "0" probe))))
 
 (defun create-socket-path (&key (prefix "cl-electron") (id (new-integer-id)))
@@ -162,7 +162,7 @@ required to be registered there.")
                               :ready-semaphore socket-ready-semaphore
                               :loop-connect-p loop-connect-p)
       (bt:wait-on-semaphore socket-ready-semaphore)
-      (send-message-interface
+      (message
        interface
        (format nil "~a = new nodejs_net.Socket().connect('~a', () => { ~a.setNoDelay(true); });"
                thread-id socket-path thread-id))
@@ -178,7 +178,7 @@ required to be registered there.")
          :ready-semaphore socket-ready-semaphore
          :loop-connect-p loop-connect-p)
       (bt:wait-on-semaphore socket-ready-semaphore)
-      (send-message-interface
+      (message
        interface
        (format nil
                "~a = new SynchronousSocket('~a', '~a');"
@@ -191,15 +191,6 @@ required to be registered there.")
     (mapcar #'bt:destroy-thread (socket-threads interface))
     (uiop:terminate-process (process interface))
     (setf (process interface) nil)))
-
-(defun send-message-interface (interface message)
-  (iolib:with-open-socket (s :address-family :local
-                             :remote-filename (uiop:native-namestring
-                                               (electron-socket-path interface)))
-
-    (write-line message s)
-    (finish-output s)
-    (read-line s)))
 
 (defun new-id ()
   "Generate a new unique ID."
@@ -229,8 +220,17 @@ required to be registered there.")
   (:export-class-name-p t)
   (:documentation "Represent objects living in Electron."))
 
-(defmethod send-message ((remote-object remote-object) message)
-  (send-message-interface (interface remote-object) message))
+(defmethod message ((interface interface) message-contents)
+  (iolib:with-open-socket (s :address-family :local
+                             :remote-filename (uiop:native-namestring
+                                               (electron-socket-path interface)))
+
+    (write-line message-contents s)
+    (finish-output s)
+    (read-line s)))
+
+(defmethod message ((remote-object remote-object) message-contents)
+  (message (interface remote-object) message-contents))
 
 (define-class browser-view (remote-object)
   ()
