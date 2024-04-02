@@ -8,11 +8,17 @@
 
 (define-class interface ()
   ((socket-directory
+    #-darwin
     (ensure-directories-exist (uiop:xdg-runtime-dir "cl-electron/"))
+    #+darwin
+    (ensure-directories-exist (pathname "~/Library/Caches/TemporaryItems/cl-electron/"))
     :export t
-    :documentation "The directory where sockets for cl-electron are stored.")
+    :documentation "The directory where sockets are stored.")
    (electron-socket-path
+    #-darwin
     (uiop:xdg-runtime-dir "cl-electron/electron.socket")
+    #+darwin
+    (pathname "~/Library/Caches/TemporaryItems/cl-electron/electron.socket")
     :export t
     :documentation "The Electron process listens to this socket to execute
 JavaScript.
@@ -95,7 +101,11 @@ required to be registered there."))
 
 (defun create-socket-path (&key (prefix "cl-electron") (id (new-integer-id)))
   "Generate a new path suitable for a socket."
-  (uiop:native-namestring (uiop:xdg-runtime-dir (format nil "~a/~a.socket" prefix id))))
+  #-darwin
+  (uiop:native-namestring (uiop:xdg-runtime-dir (format nil "~a/~a.socket" prefix id)))
+  #+darwin
+  (uiop:native-namestring
+   (pathname (format nil "~~/Library/Caches/TemporaryItems/~a/~a.socket" prefix id))))
 
 (defun create-socket (callback &key ready-semaphore (path (create-socket-path)))
   (unwind-protect
