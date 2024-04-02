@@ -96,16 +96,28 @@ required to be registered there.")
 
 (export-always 'launch)
 (defun launch (&optional (interface *interface*))
-  (unless (alive-p interface)
-    (setf (process interface)
-          (uiop:launch-program `("electron"
-                                 ,@(mapcar #'uiop:native-namestring
-                                           (list (server-path interface)
-                                                 (electron-socket-path interface))))
-                               :output :interactive))
-    ;; Block until the socket is ready and responding with evaluated code.
-    (loop for probe = (ignore-errors (message interface "0"))
-          until (equalp "0" probe))))
+  (when (alive-p interface)
+    (restart-case (error (make-condition 'duplicate-interface-error))
+      (kill ()
+        :report "Kill the existing interface and start a new one."
+        (terminate interface))
+      (ignore ()
+        :report "Ignore the existing interface and launch a new one."
+        nil)))
+  (when (uiop:file-exists-p (electron-socket-path interface))
+    (restart-case (error (make-condition 'socket-exists-error))
+      (destroy ()
+        :report "Destroy the existing socket."
+        (uiop:delete-file-if-exists (electron-socket-path interface)))))
+  (setf (process interface)
+        (uiop:launch-program `("electron"
+                               ,@(mapcar #'uiop:native-namestring
+                                         (list (server-path interface)
+                                               (electron-socket-path interface))))
+                             :output :interactive))
+  ;; Block until the socket is ready and responding with evaluated code.
+  (loop for probe = (ignore-errors (message interface "0"))
+        until (equalp "0" probe)))
 
 (defun create-socket-path (&key (prefix "cl-electron") (id (new-integer-id)))
   "Generate a new path suitable for a socket."
