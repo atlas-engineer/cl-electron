@@ -15,11 +15,12 @@ stdenv.mkDerivation {
   nativeBuildInputs = [
     pkgs.sbcl
     pkgs.libfixposix.out
-    pkgs.pkg-config
+    pkgs.pkg-config.out
   ];
 
-  buildInputs = [ electron_29-bin ];
+  buildInputs = [ electron_29-bin nodejs ];
 
-  LD_LIBRARY_PATH = with lib; "${makeLibraryPath [ pkgs.libfixposix.out ]};";
+  LD_LIBRARY_PATH = with lib; "${makeLibraryPath [ pkgs.libfixposix.out
+                                                   pkgs.pkg-config.out ]};";
 
 }

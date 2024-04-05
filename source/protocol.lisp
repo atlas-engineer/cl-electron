@@ -8,8 +8,8 @@
 
 (export-always 'handle)
 (defmethod handle ((protocol protocol) handler)
-  (send-message-interface
-   (interface protocol)
+  (message
+   protocol
    (format nil "protocol.handle('~a', ~a)" (scheme-name protocol) handler)))
 
 (export-always 'handle-content)

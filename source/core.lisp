@@ -47,11 +47,18 @@ The slot can only be set before invoking `launch'.")
     :reader t
     :writer nil
     :type pathname
-    :documentation "The path to a JS file that specifies the IPC mechanism.
+    :documentation "The path to a JavaScript file that specifies the IPC mechanism.
 
 All of its content is evaluated before the app signals the ready event.  Not
 meant to be overwritten but rather appended.  For instance, `protocols' are
-required to be registered there."))
+required to be registered there.")
+   (query-path
+    (asdf:system-relative-pathname :cl-electron "source/query.js")
+    :export t
+    :reader t
+    :writer nil
+    :type pathname
+    :documentation "The path to a JavaScript file that is used for synchronous IPC."))
   (:export-class-name-p t)
   (:predicate-name-transformer 'nclasses:always-dashed-predicate-name-transformer)
   (:documentation "Interface with an Electron instance."))
@@ -61,19 +68,21 @@ required to be registered there."))
   (with-slots (process) interface
     (and process (uiop:process-alive-p process))))
 
-(defun to-tmp-file (pathname s)
+(defun to-tmp-file (pathname &optional s)
   "Return the pathname of tmp file featuring the concatenation of file PATHNAME and string S."
   (uiop:with-temporary-file (:pathname p :keep t :type "js")
     (uiop:copy-file pathname p)
-    (str:to-file p s :if-exists :append)
+    (when s
+      (str:to-file p s :if-exists :append))
     p))
 
 (defmethod (setf protocols) (value (interface interface))
   (if (alive-p interface)
       (error "Protocols need to be set before launching ~a." interface)
-      (with-slots (protocols server-path) interface
+      (with-slots (protocols server-path query-path) interface
         (setf protocols value)
-        (setf server-path (to-tmp-file server-path (register protocols))))))
+        (setf server-path (to-tmp-file server-path (register protocols)))
+        (setf query-path (to-tmp-file query-path)))))
 
 (defmethod interface-equal ((interface1 interface) (interface2 interface))
   "Return non-nil when interfaces are equal."
@@ -88,16 +97,28 @@ required to be registered there."))
 
 (export-always 'launch)
 (defun launch (&optional (interface *interface*))
-  (unless (alive-p interface)
-    (setf (process interface)
-          (uiop:launch-program `("electron"
-                                 ,@(mapcar #'uiop:native-namestring
-                                           (list (server-path interface)
-                                                 (electron-socket-path interface))))
-                               :output :interactive))
-    ;; Block until the socket is ready and responding with evaluated code.
-    (loop for probe = (ignore-errors (send-message-interface interface "0"))
-          until (equalp "0" probe))))
+  (when (alive-p interface)
+    (restart-case (error (make-condition 'duplicate-interface-error))
+      (kill ()
+        :report "Kill the existing interface and start a new one."
+        (terminate interface))
+      (ignore ()
+        :report "Ignore the existing interface and launch a new one."
+        nil)))
+  (when (uiop:file-exists-p (electron-socket-path interface))
+    (restart-case (error (make-condition 'socket-exists-error))
+      (destroy ()
+        :report "Destroy the existing socket."
+        (uiop:delete-file-if-exists (electron-socket-path interface)))))
+  (setf (process interface)
+        (uiop:launch-program `("electron"
+                               ,@(mapcar #'uiop:native-namestring
+                                         (list (server-path interface)
+                                               (electron-socket-path interface))))
+                             :output :interactive))
+  ;; Block until the socket is ready and responding with evaluated code.
+  (loop for probe = (ignore-errors (message interface "0"))
+        until (equalp "0" probe)))
 
 (defun create-socket-path (&key (prefix "cl-electron") (id (new-integer-id)))
   "Generate a new path suitable for a socket."
@@ -107,7 +128,9 @@ required to be registered there."))
   (uiop:native-namestring
    (pathname (format nil "~~/Library/Caches/TemporaryItems/~a/~a.socket" prefix id))))
 
-(defun create-socket (callback &key ready-semaphore (path (create-socket-path)))
+(defun create-socket (callback &key ready-semaphore
+                                    (path (create-socket-path))
+                                    (loop-connect-p t))
   (unwind-protect
        (iolib:with-open-socket (s :address-family :local
                                   :connect :passive
@@ -117,38 +140,62 @@ required to be registered there."))
                                '(:group-read :group-write :group-exec
                                  :other-read :other-write :other-exec)))
          (when ready-semaphore (bt:signal-semaphore ready-semaphore))
-         (iolib:with-accept-connection (connection s)
-           (loop for expr = (read-line connection nil)
-                 until (null expr)
-                 do (unless (uiop:emptyp expr)
-                      (let* ((decoded-object (cl-json:decode-json-from-string expr))
-                             (callback-result (funcall callback decoded-object)))
-                        (when (stringp callback-result)
-                          (write-line callback-result connection)
-                          (write-line "" connection)
-                          (finish-output connection)))))))
+         (loop do (iolib:with-accept-connection (connection s)
+                    (loop for expr = (read-line connection nil)
+                          until (null expr)
+                          do (unless (uiop:emptyp expr)
+                               (let* ((decoded-object (cl-json:decode-json-from-string expr))
+                                      (callback-result (funcall callback decoded-object)))
+                                 (when (stringp callback-result)
+                                   (write-line callback-result connection)
+                                   (write-line "" connection)
+                                   (finish-output connection))))))
+               while loop-connect-p))
     (uiop:delete-file-if-exists path)))
 
-(defun create-socket-thread (callback &key ready-semaphore (interface *interface*))
+(defun create-socket-thread (callback &key ready-semaphore
+                                           (interface *interface*)
+                                           (loop-connect-p t))
   (let* ((id (new-id))
          (socket-path (uiop:native-namestring (create-socket-path :id id)))
          (socket-thread (bt:make-thread
                          (lambda ()
                            (create-socket callback
                                           :path socket-path
-                                          :ready-semaphore ready-semaphore)))))
+                                          :ready-semaphore ready-semaphore
+                                          :loop-connect-p loop-connect-p)))))
     (push socket-thread (socket-threads interface))
     (values id socket-thread socket-path)))
 
-(defun create-node-socket-thread (callback &key (interface *interface*))
+(defun create-node-socket-thread (callback &key (interface *interface*)
+                                                (loop-connect-p nil))
   (let ((socket-ready-semaphore (bt:make-semaphore)))
     (multiple-value-bind (thread-id socket-thread socket-path)
-        (create-socket-thread callback :ready-semaphore socket-ready-semaphore)
+        (create-socket-thread callback
+                              :ready-semaphore socket-ready-semaphore
+                              :loop-connect-p loop-connect-p)
       (bt:wait-on-semaphore socket-ready-semaphore)
-      (send-message-interface
+      (message
        interface
        (format nil "~a = new nodejs_net.Socket().connect('~a', () => { ~a.setNoDelay(true); });"
                thread-id socket-path thread-id))
+      (values thread-id socket-thread socket-path))))
+
+(defun create-node-synchronous-socket-thread (callback &key (interface *interface*)
+                                                       (loop-connect-p nil))
+  "Caution: SynchronousSocket blocks Node.js and can lead to deadlocks."
+  (let ((socket-ready-semaphore (bt:make-semaphore)))
+    (multiple-value-bind (thread-id socket-thread socket-path)
+        (create-socket-thread
+         callback
+         :ready-semaphore socket-ready-semaphore
+         :loop-connect-p loop-connect-p)
+      (bt:wait-on-semaphore socket-ready-semaphore)
+      (message
+       interface
+       (format nil
+               "~a = new SynchronousSocket('~a', '~a');"
+               thread-id  socket-path (query-path interface)))
       (values thread-id socket-thread socket-path))))
 
 (export-always 'terminate)
@@ -157,15 +204,6 @@ required to be registered there."))
     (mapcar #'bt:destroy-thread (socket-threads interface))
     (uiop:terminate-process (process interface))
     (setf (process interface) nil)))
-
-(defun send-message-interface (interface message)
-  (iolib:with-open-socket (s :address-family :local
-                             :remote-filename (uiop:native-namestring
-                                               (electron-socket-path interface)))
-
-    (write-line message s)
-    (finish-output s)
-    (read-line s)))
 
 (defun new-id ()
   "Generate a new unique ID."
@@ -195,6 +233,17 @@ required to be registered there."))
   (:export-class-name-p t)
   (:documentation "Represent objects living in Electron."))
 
+(defmethod message ((interface interface) message-contents)
+  (iolib:with-open-socket (s :address-family :local
+                             :remote-filename (uiop:native-namestring
+                                               (electron-socket-path interface)))
+
+    (write-line message-contents s)
+    (finish-output s)
+    (read-line s)))
+
+(defmethod message ((remote-object remote-object) message-contents)
+  (message (interface remote-object) message-contents))
 
 (define-class browser-view (remote-object)
   ()
