@@ -136,3 +136,6 @@ dist
 .pnp.*
 
 .direnv
+
+# Ignore build output directory of Node.js FFI.
+build
