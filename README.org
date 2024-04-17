@@ -1,8 +1,8 @@
 #+TITLE: cl-electron - Electron binding for Common Lisp
 
 * Installation
-=cl-electron= depends on Electron, a Common Lisp implementation (SBCL) and some
-CL libraries (consult [[file:cl-electron.asd][cl-electron.asd file]]).
+=cl-electron= depends on Electron 29, a Common Lisp implementation (SBCL) and
+some CL libraries (consult [[file:cl-electron.asd][cl-electron.asd file]]).
 
 ** Nix + Quicklisp
 Issuing =nix-shell= at the root of the project starts an environment
