@@ -14,9 +14,16 @@
 
 (use-modules (guix packages)
              (guix gexp)
+             (gnu packages node)
+             (gnu packages lisp-xyz)
+             (nongnu packages electron)
              (nongnu packages lisp))
 
 (package
   (inherit cl-electron)
   (version "dev")
+  (inputs (list electron node
+                sbcl-cl-json sbcl-iolib sbcl-cl-str sbcl-nclasses
+                sbcl-cl-ppcre sbcl-bordeaux-threads sbcl-lparallel
+                sbcl-parenscript sbcl-spinneret))
   (source (local-file (dirname (current-filename)) #:recursive? #t)))
