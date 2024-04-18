@@ -14,15 +14,11 @@
     (ensure-directories-exist (pathname "~/Library/Caches/TemporaryItems/cl-electron/"))
     :export t
     :documentation "The directory where sockets are stored.")
-   (electron-socket-path
-    #-darwin
-    (uiop:xdg-runtime-dir "cl-electron/electron.socket")
-    #+darwin
-    (pathname "~/Library/Caches/TemporaryItems/cl-electron/electron.socket")
+   (electron-socket-name
+    "electron.socket"
     :export t
-    :documentation "The Electron process listens to this socket to execute
-JavaScript.
-For each instruction it writes the result back to this socket.")
+    :documentation "The name of the socket.
+See `electron-socket-path'.")
    (socket-threads
     '()
     :documentation "A list of threads connected to sockets used by the system.")
@@ -62,6 +58,12 @@ required to be registered there.")
   (:export-class-name-p t)
   (:predicate-name-transformer 'nclasses:always-dashed-predicate-name-transformer)
   (:documentation "Interface with an Electron instance."))
+
+(defmethod electron-socket-path ((interface interface))
+  "The Electron process listens to this socket to execute JavaScript.
+For each instruction it writes the result back to it."
+  (with-slots (socket-directory electron-socket-name) interface
+    (uiop:merge-pathnames* socket-directory electron-socket-name)))
 
 (defmethod alive-p ((interface interface))
   "Whether the INTERFACE's Electron process is running."
@@ -118,13 +120,9 @@ required to be registered there.")
          (loop for probe = (ignore-errors (message interface "0"))
                until (equalp "0" probe)))))
 
-(defun create-socket-path (&key (prefix "cl-electron") (id (new-integer-id)))
+(defun create-socket-path (&key (interface *interface*) (id (new-integer-id)))
   "Generate a new path suitable for a socket."
-  #-darwin
-  (uiop:native-namestring (uiop:xdg-runtime-dir (format nil "~a/~a.socket" prefix id)))
-  #+darwin
-  (uiop:native-namestring
-   (pathname (format nil "~~/Library/Caches/TemporaryItems/~a/~a.socket" prefix id))))
+  (uiop:merge-pathnames* (socket-directory interface) (format nil "~a.socket" id)))
 
 (defun create-socket (callback &key ready-semaphore
                                     (path (create-socket-path))
