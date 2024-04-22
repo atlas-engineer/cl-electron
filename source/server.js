@@ -10,7 +10,7 @@ if (process.argv.length != 3) {
   process.exit(1);
 }
 
-const SynchronousSocket = require('bindings')('SynchronousSocket');
+const SynchronousSocket = require('synchronous-socket');
 const { app, ipcMain, BrowserView, BrowserWindow, webContents, protocol, net } = require('electron')
 const path = require('path')
 const nodejs_net = require('net');
