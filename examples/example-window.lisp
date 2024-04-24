@@ -1,9 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(in-package :electron/demos)
+(in-package :electron/examples)
 
-(defun electron-window-demo ()
+(defun electron-window-example ()
   (setf electron:*interface* (make-instance 'electron:interface))
   (electron:launch)
   (let ((win (make-instance 'electron:browser-window)))

@@ -39,10 +39,10 @@
                        :package :electron/tests
                        :run-contexts #'lisp-unit2:with-summary-context)")))
 
-(defsystem "cl-electron/demos"
-  :pathname "demos"
+(defsystem "cl-electron/examples"
+  :pathname "examples"
   :depends-on (cl-electron)
   :components ((:file "package")
-               (:file "demo-window")
-               (:file "demo-views")
-               (:file "demo-protocol")))
+               (:file "example-window")
+               (:file "example-views")
+               (:file "example-protocol")))

@@ -37,7 +37,7 @@ the example below.
 See [[file:guix.scm][guix.scm]] for how to setup the development environment.
 
 * Examples
-See [[file:demos/][demos]] folder.
+See [[file:examples/][examples]] folder.
 
 * Copying
 cl-electron is distributed under the BSD license.

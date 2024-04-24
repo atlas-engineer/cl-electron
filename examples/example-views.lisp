@@ -1,7 +1,7 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(in-package :electron/demos)
+(in-package :electron/examples)
 
 (define-class browser-view-bound-to-window (electron:browser-view)
   ((parent-window (error "Slot `parent-window' must be set."))))
@@ -73,7 +73,7 @@
   (electron:set-background-color prompt "lightskyblue")
   (electron:load-url prompt "about:blank"))
 
-(defun electron-views-demo ()
+(defun electron-views-example ()
   (setf electron:*interface* (make-instance 'electron:interface))
   (electron:launch)
   (let ((win (make-instance 'electron:browser-window :options "{frame: false}")))
