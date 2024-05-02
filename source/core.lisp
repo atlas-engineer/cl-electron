@@ -102,14 +102,13 @@ For each instruction it writes the result back to it."
              (destroy ()
                :report "Destroy the existing socket."
                (uiop:delete-file-if-exists (electron-socket-path interface)))))
-         (uiop:chdir (asdf:system-relative-pathname :cl-electron "source"))
          (setf (process interface)
-               (uiop:launch-program `("npx"
-                                      "electron"
+               (uiop:launch-program `("npm" "start" "--"
                                       ,@(mapcar #'uiop:native-namestring
                                                 (list (server-path interface)
                                                       (electron-socket-path interface))))
-                                    :output :interactive))
+                                    :output :interactive
+                                    :directory (asdf:system-source-directory :cl-electron)))
          ;; Block until the socket is ready and responding with evaluated code.
          (loop for probe = (ignore-errors (message interface "0"))
                until (equalp "0" probe)))))
