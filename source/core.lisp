@@ -47,14 +47,7 @@ The slot can only be set before invoking `launch'.")
 
 All of its content is evaluated before the app signals the ready event.  Not
 meant to be overwritten but rather appended.  For instance, `protocols' are
-required to be registered there.")
-   (query-path
-    (asdf:system-relative-pathname :cl-electron "source/query.js")
-    :export t
-    :reader t
-    :writer nil
-    :type pathname
-    :documentation "The path to a JavaScript file that is used for synchronous IPC."))
+required to be registered there."))
   (:export-class-name-p t)
   (:predicate-name-transformer 'nclasses:always-dashed-predicate-name-transformer)
   (:documentation "Interface with an Electron instance."))
@@ -81,10 +74,9 @@ For each instruction it writes the result back to it."
 (defmethod (setf protocols) (value (interface interface))
   (if (alive-p interface)
       (error "Protocols need to be set before launching ~a." interface)
-      (with-slots (protocols server-path query-path) interface
+      (with-slots (protocols server-path) interface
         (setf protocols value)
-        (setf server-path (to-tmp-file server-path (register protocols)))
-        (setf query-path (to-tmp-file query-path)))))
+        (setf server-path (to-tmp-file server-path (register protocols))))))
 
 (defmethod interface-equal ((interface1 interface) (interface2 interface))
   "Return non-nil when interfaces are equal."
@@ -110,8 +102,10 @@ For each instruction it writes the result back to it."
              (destroy ()
                :report "Destroy the existing socket."
                (uiop:delete-file-if-exists (electron-socket-path interface)))))
+         (uiop:chdir (asdf:system-relative-pathname :cl-electron "source"))
          (setf (process interface)
-               (uiop:launch-program `("electron"
+               (uiop:launch-program `("npx"
+                                      "electron"
                                       ,@(mapcar #'uiop:native-namestring
                                                 (list (server-path interface)
                                                       (electron-socket-path interface))))
@@ -190,8 +184,9 @@ For each instruction it writes the result back to it."
       (message
        interface
        (format nil
-               "~a = new SynchronousSocket('~a', '~a');"
-               thread-id  socket-path (query-path interface)))
+               "~a = new SynchronousSocket.SynchronousSocket('~a');
+                ~a.connect()"
+               thread-id socket-path thread-id))
       (values thread-id socket-thread socket-path))))
 
 (export-always 'terminate)
