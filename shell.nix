@@ -1,9 +1,11 @@
 # SPDX-FileCopyrightText: Atlas Engineer LLC
 # SPDX-License-Identifier: BSD-3-Clause
 
-# This file is meant to be used with the cl-electron system. Use this
-# file to open a nix shell with the required dependencies to run SBCL
-# and load cl-electron.
+# It doesn't handle Node.js since it expects an FHS-compliant file system.
+
+# To start the CL REPL:
+
+# nix-shell --run 'sbcl --dynamic-space-size 3072'
 
 { pkgs ? import <nixpkgs> {} } :
 with builtins;
@@ -17,8 +19,6 @@ stdenv.mkDerivation {
     pkgs.libfixposix.out
     pkgs.pkg-config.out
   ];
-
-  buildInputs = [ electron_29-bin nodejs ];
 
   LD_LIBRARY_PATH = with lib; "${makeLibraryPath [ pkgs.libfixposix.out
                                                    pkgs.pkg-config.out ]};";
