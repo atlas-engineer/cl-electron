@@ -15,7 +15,8 @@
      (let ((win (make-instance 'electron:browser-window)))
        (electron:load-url win "https://en.wikipedia.org/wiki/Electron")
        (sleep 1)
-       ,@body)
+       ,@body
+       (electron:kill win))
      (electron:terminate)))
 
 (define-test js-handling-single-quote ()

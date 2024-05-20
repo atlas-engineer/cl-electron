@@ -1,40 +1,14 @@
 #+TITLE: cl-electron - Electron binding for Common Lisp
 
 * Installation
-=cl-electron= depends on Electron 29, a Common Lisp implementation (SBCL) and
+=cl-electron= depends on Node.js, a Common Lisp implementation (SBCL) and
 some CL libraries (consult [[file:cl-electron.asd][cl-electron.asd file]]).
 
-** Nix + Quicklisp
-Issuing =nix-shell= at the root of the project starts an environment
-where all dependencies are available except for the CL libraries.
+Run =npm install= from the project's root to install all Node.js dependencies
+(including Electron).
 
-If you manage CL libraries by yourself, place them in a directory where
-ASDF finds them (e.g. =~/common-lisp/=).
-
-If you manage Common Lisp dependencies with Quicklisp:
-
-1. Clone the git repository to =~/common-lisp/quicklisp/local-projects/cl-electron=
-2. =sbcl=
-3. =(ql:quickload :cl-electron)=
-
-** Guix
-Electron can only be fetched from the =nonguix= channel.  Add the
-channel by editing the file =~/.config/guix/channels.scm=, according to
-the example below.
-
-#+begin_src scheme
-(cons* (channel
-        (name 'nonguix)
-        (url "https://gitlab.com/nonguix/nonguix")
-        (introduction
-         (make-channel-introduction
-          "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
-          (openpgp-fingerprint
-           "2A39 3FFF 68F4 EF7A 3D29  12AF 6F51 20A0 22FB B2D5"))))
-       %default-channels)
-#+end_src
-
-See [[file:guix.scm][guix.scm]] for how to setup the development environment.
+The CL dependencies can be handled via Guix, Nix or manually (see [[file:manifest.scm][Guix manifest]]
+and [[file:shell.nix][Nix shell]]).
 
 * Examples
 See [[file:examples/][examples]] folder.

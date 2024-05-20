@@ -1,0 +1,24 @@
+{
+    "name": "cl-electron-server",
+    "version": "0.0.1",
+    "description": "Electron server for cl-electron.",
+    "main": "source/server.js",
+    "author": "Atlas Engineer",
+    "license": "BSD",
+    "bugs": {
+        "url": "https://github.com/atlas-engineer/cl-electron/issues"
+    },
+    "homepage": "https://github.com/atlas-engineer/cl-electron/",
+    "scripts": {
+        "postinstall": "electron-builder install-app-deps",
+        "start": "electron",
+        "repl": "electron -i"
+    },
+    "devDependencies": {
+        "electron": "^29.4.0",
+        "electron-builder": "^24.13.3"
+    },
+    "dependencies": {
+        "synchronous-socket": "^0.0.1"
+    }
+}
