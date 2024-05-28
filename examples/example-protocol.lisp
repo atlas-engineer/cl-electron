@@ -15,7 +15,7 @@
   (electron:handle (find "test" (electron:protocols electron:*interface*)
                            :key #'electron:scheme-name :test #'string-equal)
                    "() => {return new Response('Hello test scheme.')}")
-  (let ((win (make-instance 'electron:browser-window :options "{frame: false}"))
+  (let ((win (make-instance 'electron:browser-window))
         (view1 (make-instance 'electron:browser-view))
         (view2 (make-instance 'electron:browser-view)))
     (electron:add-browser-view win view1)
