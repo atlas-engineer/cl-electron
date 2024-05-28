@@ -5,12 +5,11 @@
 
 (in-package :electron)
 
-(defmethod initialize-instance :after ((browser-window browser-window)
-                                       &key (options "{frame: true, autoHideMenuBar: true}"))
+(defmethod initialize-instance :after ((browser-window browser-window) &key)
   (message
    browser-window
    (format nil "~a = new BrowserWindow(~a);"
-           (remote-symbol browser-window) options)))
+           (remote-symbol browser-window) (options browser-window))))
 
 (export-always 'register-before-input-event)
 (defmethod register-before-input-event ((browser-window browser-window) callback)

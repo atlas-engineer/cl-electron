@@ -5,12 +5,11 @@
 
 (in-package :electron)
 
-(defmethod initialize-instance :after ((browser-view browser-view) &key (options ""))
+(defmethod initialize-instance :after ((browser-view browser-view) &key)
   (message
    browser-view
    (format nil "~a = new BrowserView(~a)"
-           (remote-symbol browser-view)
-           options)))
+           (remote-symbol browser-view) (options browser-view))))
 
 (export-always 'set-bounds)
 (defmethod set-bounds ((browser-view browser-view) x y width height)

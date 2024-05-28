@@ -241,11 +241,23 @@ For each instruction it writes the result back to it."
   (message (interface remote-object) message-contents))
 
 (define-class browser-view (remote-object)
-  ()
+  ((options
+    ""
+    :export t
+    :reader t
+    :writer nil
+    :type string
+    :documentation "A string that specifies the views's behavior."))
   (:export-class-name-p t))
 
 (define-class browser-window (remote-object)
-  ()
+  ((options
+    "{autoHideMenuBar: true}"
+    :export t
+    :reader t
+    :writer nil
+    :type string
+    :documentation "A string that specifies the window's behavior."))
   (:export-class-name-p t))
 
 (define-class web-contents (remote-object)
