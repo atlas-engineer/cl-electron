@@ -22,13 +22,13 @@
           (bind-node-socket-thread
            protocol
            (lambda (response)
-            (cl-json:encode-json-to-string
-             (multiple-value-bind (data-string data-type) (apply callback response)
-               (list (cons "dataString" data-string)
-                     (cons "dataType" (or data-type "text/html;charset=utf8")))))))))
+             (cl-json:encode-json-to-string
+              (multiple-value-bind (data-string data-type) (apply callback response)
+                (list (cons "dataString" data-string)
+                      (cons "dataType" (or data-type "text/html;charset=utf8")))))))))
     (handle protocol
             (format nil
- "(request) => {
+"(request) => {
     return new Promise((resolve, reject) => {
         jsonString = JSON.stringify([ request.url ]);
         ~a.write(`${jsonString}\\n`);
