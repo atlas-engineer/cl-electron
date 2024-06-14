@@ -232,7 +232,6 @@ For each instruction it writes the result back to it."
   (iolib:with-open-socket (s :address-family :local
                              :remote-filename (uiop:native-namestring
                                                (electron-socket-path interface)))
-
     (write-line message-contents s)
     (finish-output s)
     (read-line s)))
