@@ -201,6 +201,18 @@ See `set-bounds' for the list of available parameters."
    browser-window
    (format nil "~a.on('~a', () => {~a})" (remote-symbol browser-window) event-name code)))
 
+(export-always 'on-event)
+(defmethod on-event ((browser-window browser-window) event-name callback)
+  (let ((socket-thread-id
+          (create-node-socket-thread (lambda (response)
+                                       (declare (ignore response))
+                                       (funcall callback browser-window)))))
+    (on browser-window event-name
+        (format nil
+                "jsonString = JSON.stringify([]);
+                 ~a.write(`${jsonString}\\n`);"
+                socket-thread-id))))
+
 ;; Static methods
 ;; https://www.electronjs.org/docs/latest/api/browser-window#static-methods
 
