@@ -12,7 +12,6 @@ if (process.argv.length != 3) {
 
 const path = require('path')
 const nodejs_net = require('net');
-const childProcess = require('child_process');
 // The architecture of protocol handling resorts to a tmp file, meaning that the
 // main JS location may differ from the location of the current file.
 const SynchronousSocket = require(path.resolve('node_modules/synchronous-socket'));
