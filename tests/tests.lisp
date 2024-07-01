@@ -39,3 +39,23 @@
         (electron:web-contents win)
         (ps:ps (setf (ps:chain document (get-elements-by-tag-name "html") 0 |innerHTML|)
                      (ps:lisp html))))))))
+
+(define-test sanitize-ipc-communication ()
+  (with-electron-session
+    (electron:register-before-input-event win
+                                          (lambda (win input)
+                                            (declare (ignore win))
+                                            (print input) t))
+    (electron:on-event (electron:web-contents win)
+                       "did-finish-load"
+                       (lambda (web-contents) (declare (ignore web-contents)) t))
+    (dotimes (n 2000)
+      (electron:execute-javascript-synchronous (electron:web-contents win)
+                                               (ps:ps "hello world!"))))
+  (let ((dir (electron:sockets-directory electron:*interface*)))
+    ;; No dangling connections.
+    (assert-true (uiop:emptyp (uiop:run-program (format nil "ss -ax | grep ~a" dir)
+                                                :output '(:string :stripped t)
+                                                :ignore-error-status t)))
+    ;; No dangling socket files.
+    (assert-false (uiop:directory-files dir))))
