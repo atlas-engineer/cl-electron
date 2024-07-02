@@ -65,3 +65,12 @@
                          (electron:load-url win "https://nyxt-browser.com/"))))
   (sleep 1)
   (assert-false (uiop:directory-files (electron:socket-directory electron:*interface*))))
+
+(define-test emfile-error ()
+  (with-electron-session
+    (assert-no-error
+     ;; #<Syscall "socket" signalled error EMFILE(24) "Too many open files">
+     'isys:emfile
+     (dotimes (n 10000)
+       (electron:execute-javascript-synchronous (electron:web-contents win)
+                                                (ps:ps "hello world!"))))))
