@@ -206,7 +206,8 @@
     ((web-contents web-contents) code callback &key (user-gesture "false"))
   (let ((socket-thread-id
           (create-node-socket-thread (lambda (response)
-                                       (apply callback (cons web-contents response))))))
+                                       (apply callback (cons web-contents response)))
+                                     :interface (interface web-contents))))
     (message
      web-contents
      (format nil "~a.executeJavaScript(`~a`, ~a).then((value) => {
@@ -227,7 +228,8 @@
   (let ((socket-thread-id
           (create-node-socket-thread (lambda (response)
                                        (declare (ignore response))
-                                       (funcall callback web-contents)))))
+                                       (funcall callback web-contents))
+                                     :interface (interface web-contents))))
     (on web-contents event-name
         (format nil
                 "jsonString = JSON.stringify([]);

@@ -206,7 +206,8 @@ See `set-bounds' for the list of available parameters."
   (let ((socket-thread-id
           (create-node-socket-thread (lambda (response)
                                        (declare (ignore response))
-                                       (funcall callback browser-window)))))
+                                       (funcall callback browser-window))
+                                     :interface (interface browser-window))))
     (on browser-window event-name
         (format nil
                 "jsonString = JSON.stringify([]);
