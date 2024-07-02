@@ -69,8 +69,7 @@ See `set-bounds' for the list of available parameters."
              (cl-json:encode-json-to-string
               (list (cons "preventDefault"
                           (not (null (apply callback (cons browser-view response))))))))
-           :interface (interface browser-view)
-           :loop-connect-p t)))
+           :interface (interface browser-view))))
     (message
      browser-view
      (format nil
