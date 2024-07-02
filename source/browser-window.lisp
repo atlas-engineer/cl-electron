@@ -19,8 +19,7 @@
              (cl-json:encode-json-to-string
               (list (cons "preventDefault"
                           (apply callback (cons browser-window response))))))
-           :interface (interface browser-window)
-           :loop-connect-p t)))
+           :interface (interface browser-window))))
     (message
      browser-window
      (format nil
