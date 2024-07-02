@@ -218,6 +218,7 @@
              thread-id thread-id))
     (values thread-id socket-thread socket-path)))
 
+;; generic that dispatches over web-contents and window.
 (export-always 'on)
 (defmethod on ((web-contents web-contents) event-name code)
   (message

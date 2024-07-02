@@ -22,6 +22,7 @@
     :export t
     :documentation "The name of the server socket.
 See `server-socket-path'.")
+   ;; 2 slots with this name, on interface and remote-object
    (socket-threads
     '()
     :documentation "A list of threads connected to sockets used by the system.")
@@ -98,11 +99,14 @@ For each instruction it writes the result back to it."
       (= (uiop:process-info-pid process1)
          (uiop:process-info-pid process2)))))
 
+;; this should be handled by the user of the library.
 (export-always '*interface*)
 (defvar *interface* nil)
 
+;; replace by method.
 (export-always 'launch)
 (defun launch (&optional (interface *interface*))
+  ;; replace cond with case?
   (cond ((alive-p interface)
          (restart-case (error (make-condition 'duplicate-interface-error))
            (kill ()
@@ -113,6 +117,11 @@ For each instruction it writes the result back to it."
            (restart-case (error (make-condition 'socket-exists-error))
              (destroy ()
                :report "Destroy the existing socket."
+               ;; (isys:kill (parse-integer
+               ;;             (uiop:run-program "fuser /run/user/1000/cl-electron/electron.socket"
+               ;;                               :output '(:string :stripped t)))
+               ;;            :sigterm)
+               ;; maybe use delete-file?
                (uiop:delete-file-if-exists (server-socket-path interface)))))
          (setf (process interface)
                (uiop:launch-program `("npm" "start" "--"
@@ -126,6 +135,9 @@ For each instruction it writes the result back to it."
                        ;; Signals that the server socket doesn't exist.
                        (iolib/syscalls:enoent () (sleep 0.1)))))))
 
+;; I don't like all of these functions that take interface as arg. they're methods.
+
+;; it's handled differently on both of its uses for no good reason.
 (defun create-socket-path (&key (interface *interface*) (id (new-integer-id)))
   "Generate a new path suitable for a socket."
   (uiop:merge-pathnames* (sockets-directory interface) (format nil "~a.socket" id)))
@@ -158,6 +170,7 @@ For each instruction it writes the result back to it."
     (values id socket-thread socket-path)))
 
 (defun create-node-socket-thread (callback &key (interface *interface*))
+  ;; looks like methods of remote-object, not interface.
   (let ((socket-ready-semaphore (bt:make-semaphore)))
     (multiple-value-bind (thread-id socket-thread socket-path)
         (create-socket-thread callback
@@ -169,8 +182,12 @@ For each instruction it writes the result back to it."
       (values thread-id socket-thread socket-path))))
 
 (defun create-node-synchronous-socket-thread (callback &key (interface *interface*))
+  ;; looks like methods of remote-object, not interface.
+;; this is the same as create-node-socket-thread, only the message differs.
   "Caution: SynchronousSocket blocks Node.js and can lead to deadlocks."
   (let ((socket-ready-semaphore (bt:make-semaphore)))
+    ;; this is not a thread-id, but just a random ID.
+    ;; see that at create-socket-thread it returns id, socket-thread, socket-path.
     (multiple-value-bind (thread-id socket-thread socket-path)
         (create-socket-thread callback
                               :ready-semaphore socket-ready-semaphore)
@@ -215,6 +232,15 @@ Particularly useful to avoid errors on already terminated threads."
     :reader t
     :writer nil
     :documentation "The internal variable name in the running `process'.")
+   ;; it's odd to add a slot that points to the container instance. instead, add
+   ;; a remote-objects-list slot to interface.
+
+   ;; question: how to go from the remote-object to the interface? and do we
+   ;; ever need to do that?
+
+   ;; it is used in static method, that require sending a msg to the interface,
+   ;; and not to the obj. but wouldn't it be better to just assume that there is
+   ;; a single interface?
    (interface
     *interface*
     :reader t
@@ -248,11 +274,13 @@ Particularly useful to avoid errors on already terminated threads."
                                                (server-socket-path interface)))
     (write-line message-contents s)
     (finish-output s)
+    ;; why do we need to read?
     (read-line s)))
 
 (defmethod message ((remote-object remote-object) message-contents)
   (message (interface remote-object) message-contents))
 
+;; the classes that inherit from remote-object should specialize remote-symbol.
 (define-class browser-view (remote-object)
   ((options
     ""
