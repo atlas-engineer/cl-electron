@@ -9,7 +9,13 @@
   (message
    browser-view
    (format nil "~a = new BrowserView(~a)"
-           (remote-symbol browser-view) (options browser-view))))
+           (remote-symbol browser-view) (options browser-view)))
+  ;; (electron:on-event browser-view "closed"
+  ;;                    (lambda (view)
+  ;;                      (mapcar #'bt:destroy-thread
+  ;;                              (append (socket-threads view)
+  ;;                                      (socket-threads (web-contents view))))))
+  )
 
 (export-always 'set-bounds)
 (defmethod set-bounds ((browser-view browser-view) x y width height)
