@@ -217,6 +217,7 @@
              (remote-symbol web-contents) (%quote-js code) user-gesture
              socket-thread-id socket-thread-id))))
 
+;; generic that dispatches over web-contents and window.
 (export-always 'on)
 (defmethod on ((web-contents web-contents) event-name code)
   (message
