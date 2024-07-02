@@ -12,9 +12,8 @@
      (setf electron:*interface*
            (make-instance 'electron:interface))
      (electron:launch)
-     (let ((win (make-instance 'electron:browser-window)))
+     (let ((win (make-instance 'electron:browser-window :options "{show: false}")))
        (electron:load-url win "https://en.wikipedia.org/wiki/Electron")
-       (sleep 1)
        ,@body
        (electron:kill win))
      (electron:terminate)))
@@ -23,19 +22,19 @@
   (with-electron-session
     (let ((js (ps:ps "a'b'")))
       (assert-string= (electron:execute-javascript-synchronous (electron:web-contents win) js)
-                      (electron::message electron:*interface* js)))))
+                      (electron::message (electron:interface win) js)))))
 
 (define-test js-handling-double-quote ()
   (with-electron-session
     (let ((js (ps:ps "a\"b\"")))
       (assert-string= (electron:execute-javascript-synchronous (electron:web-contents win) js)
-                      (electron::message electron:*interface* js)))))
+                      (electron::message (electron:interface win) js)))))
 
 (define-test js-handling-multi-line ()
   (with-electron-session
     (let ((js (ps:ps ((lambda (x y) (+ x y)) 2 2))))
       (assert-eq (electron:execute-javascript-synchronous (electron:web-contents win) js)
-                 (parse-integer (electron::message electron:*interface* js))))))
+                 (parse-integer (electron::message (electron:interface win) js))))))
 
 (define-test js-handling-doc ()
   (with-electron-session
