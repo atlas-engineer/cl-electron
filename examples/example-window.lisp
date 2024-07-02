@@ -14,7 +14,7 @@
      (lambda (win input)
        (declare (ignore win))
        (print input)
-       (if (equal "e" (cdr (assoc :key input)))
+       (if (string-equal "e" (cdr (assoc :key input)))
            t
            nil)))
     win))
