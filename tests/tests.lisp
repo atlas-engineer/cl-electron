@@ -52,3 +52,25 @@
         (electron:web-contents win)
         (ps:ps (setf (ps:chain document (get-elements-by-tag-name "html") 0 |innerHTML|)
                      (ps:lisp html))))))))
+
+(define-test sanitize-sockets ()
+  (with-electron-session
+    (electron:register-before-input-event win
+                                          (lambda (win input)
+                                            (declare (ignore win))
+                                            (print input) t))
+    (electron:on-event win
+                       "did-finish-load"
+                       (lambda (win)
+                         (electron:load-url win "https://nyxt-browser.com/"))))
+  (sleep 1)
+  (assert-false (uiop:directory-files (electron:socket-directory electron:*interface*))))
+
+(define-test emfile-error ()
+  (with-electron-session
+    (assert-no-error
+     ;; #<Syscall "socket" signalled error EMFILE(24) "Too many open files">
+     'isys:emfile
+     (dotimes (n 10000)
+       (electron:execute-javascript-synchronous (electron:web-contents win)
+                                                (ps:ps "hello world!"))))))

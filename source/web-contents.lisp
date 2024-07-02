@@ -206,7 +206,8 @@
     ((web-contents web-contents) code callback &key (user-gesture "false"))
   (let ((socket-thread-id
           (create-node-socket-thread (lambda (response)
-                                       (apply callback (cons web-contents response))))))
+                                       (apply callback (cons web-contents response)))
+                                     :interface (interface web-contents))))
     (message
      web-contents
      (format nil "~a.executeJavaScript(`~a`, ~a).then((value) => {
@@ -216,6 +217,7 @@
              (remote-symbol web-contents) (%quote-js code) user-gesture
              socket-thread-id socket-thread-id))))
 
+;; generic that dispatches over web-contents and window.
 (export-always 'on)
 (defmethod on ((web-contents web-contents) event-name code)
   (message
@@ -227,7 +229,8 @@
   (let ((socket-thread-id
           (create-node-socket-thread (lambda (response)
                                        (declare (ignore response))
-                                       (funcall callback web-contents)))))
+                                       (funcall callback web-contents))
+                                     :interface (interface web-contents))))
     (on web-contents event-name
         (format nil
                 "jsonString = JSON.stringify([]);

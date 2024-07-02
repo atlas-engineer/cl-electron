@@ -24,7 +24,8 @@
              (cl-json:encode-json-to-string
               (multiple-value-bind (data-string data-type) (apply callback response)
                 (list (cons "dataString" data-string)
-                      (cons "dataType" (or data-type "text/html;charset=utf8")))))))))
+                      (cons "dataType" (or data-type "text/html;charset=utf8"))))))
+           :interface (interface protocol))))
     (handle protocol
             (format nil
 "(request) => {

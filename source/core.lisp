@@ -19,6 +19,7 @@
     :export t
     :documentation "The name of the socket.
 See `electron-socket-path'.")
+   ;; 2 slots with this name, on interface and remote-object
    (socket-threads
     '()
     :documentation "A list of threads connected to sockets used by the system.")
@@ -113,13 +114,14 @@ For each instruction it writes the result back to it."
          (loop for probe = (ignore-errors (message interface "0"))
                until (equalp "0" probe)))))
 
+;; I don't like all of these functions that take interface as arg. they're methods.
+
+;; it's handled differently on both of its uses for no good reason.
 (defun create-socket-path (&key (interface *interface*) (id (new-integer-id)))
   "Generate a new path suitable for a socket."
   (uiop:merge-pathnames* (socket-directory interface) (format nil "~a.socket" id)))
 
-(defun create-socket (callback &key ready-semaphore
-                                    (path (create-socket-path))
-                                    (loop-connect-p t))
+(defun create-socket (callback &key ready-semaphore (path (create-socket-path)))
   (unwind-protect
        (iolib:with-open-socket (s :address-family :local
                                   :connect :passive
@@ -129,56 +131,55 @@ For each instruction it writes the result back to it."
                                '(:group-read :group-write :group-exec
                                  :other-read :other-write :other-exec)))
          (when ready-semaphore (bt:signal-semaphore ready-semaphore))
-         (loop do (iolib:with-accept-connection (connection s)
-                    (loop for expr = (read-line connection nil)
-                          until (null expr)
-                          do (unless (uiop:emptyp expr)
-                               (let* ((decoded-object (cl-json:decode-json-from-string expr))
-                                      (callback-result (funcall callback decoded-object)))
-                                 (when (stringp callback-result)
-                                   (write-line callback-result connection)
-                                   (write-line "" connection)
-                                   (finish-output connection))))))
-               while loop-connect-p))
+         (loop for connection = (iolib:accept-connection s)
+               while connection
+               do (loop for expr = (ignore-errors (read-line connection nil))
+                        while expr
+                        for decoded-object = (cl-json:decode-json-from-string expr)
+                        for callback-result = (funcall callback decoded-object)
+                        when (stringp callback-result)
+                          do (write-line callback-result connection)
+                             (write-line "" connection)
+                             (finish-output connection)
+                        finally (uiop:delete-file-if-exists path))))
     (uiop:delete-file-if-exists path)))
 
-(defun create-socket-thread (callback &key ready-semaphore
-                                           (interface *interface*)
-                                           (loop-connect-p t))
+(defun create-socket-thread (callback &key ready-semaphore (interface *interface*))
   (let* ((id (new-id))
          (socket-path (uiop:native-namestring (create-socket-path :id id)))
          (socket-thread (bt:make-thread
                          (lambda ()
                            (create-socket callback
                                           :path socket-path
-                                          :ready-semaphore ready-semaphore
-                                          :loop-connect-p loop-connect-p)))))
+                                          :ready-semaphore ready-semaphore)))))
     (push socket-thread (socket-threads interface))
     (values id socket-thread socket-path)))
 
-(defun create-node-socket-thread (callback &key (interface *interface*)
-                                                (loop-connect-p nil))
+(defun create-node-socket-thread (callback &key (interface *interface*))
+  ;; looks like methods of remote-object, not interface.
   (let ((socket-ready-semaphore (bt:make-semaphore)))
     (multiple-value-bind (thread-id socket-thread socket-path)
         (create-socket-thread callback
-                              :ready-semaphore socket-ready-semaphore
-                              :loop-connect-p loop-connect-p)
+                              :ready-semaphore socket-ready-semaphore)
       (bt:wait-on-semaphore socket-ready-semaphore)
       (message
        interface
        (format nil "~a = new nodejs_net.Socket().connect('~a', () => { ~a.setNoDelay(true); });"
                thread-id socket-path thread-id))
+      ;; (sleep 1)
+      ;; (trivial-garbage:finalize object (lambda () (bt:destroy-thread socket-thread)))
       (values thread-id socket-thread socket-path))))
 
-(defun create-node-synchronous-socket-thread (callback &key (interface *interface*)
-                                                       (loop-connect-p nil))
+(defun create-node-synchronous-socket-thread (callback &key (interface *interface*))
+  ;; looks like methods of remote-object, not interface.
+;; this is the same as create-node-socket-thread, only the message differs.
   "Caution: SynchronousSocket blocks Node.js and can lead to deadlocks."
   (let ((socket-ready-semaphore (bt:make-semaphore)))
+    ;; this is not a thread-id, but just a random ID.
+    ;; see that at create-socket-thread it returns id, socket-thread, socket-path.
     (multiple-value-bind (thread-id socket-thread socket-path)
-        (create-socket-thread
-         callback
-         :ready-semaphore socket-ready-semaphore
-         :loop-connect-p loop-connect-p)
+        (create-socket-thread callback
+                              :ready-semaphore socket-ready-semaphore)
       (bt:wait-on-semaphore socket-ready-semaphore)
       (message
        interface
@@ -192,6 +193,7 @@ For each instruction it writes the result back to it."
 (defun terminate (&optional (interface *interface*))
   (when (and (process interface) (uiop:process-alive-p (process interface)))
     (mapcar #'bt:destroy-thread (socket-threads interface))
+    ;; delete all threads and sockets.
     ;; `uiop:terminate-process' sends an async signal to delete the socket,
     ;; meaning that is may persistent for a while. It is safer to delete it
     ;; right away, otherwise chaining `terminate' and `launch' could raise
@@ -215,6 +217,15 @@ For each instruction it writes the result back to it."
     :reader t
     :writer nil
     :documentation "The internal variable name in the running `process'.")
+   ;; it's odd to add a slot that points to the container instance. instead, add
+   ;; a remote-objects-list slot to interface.
+
+   ;; question: how to go from the remote-object to the interface? and do we
+   ;; ever need to do that?
+
+   ;; it is used in static method, that require sending a msg to the interface,
+   ;; and not to the obj. but wouldn't it be better to just assume that there is
+   ;; a single interface?
    (interface
     *interface*
     :reader t
@@ -237,8 +248,10 @@ For each instruction it writes the result back to it."
     (read-line s)))
 
 (defmethod message ((remote-object remote-object) message-contents)
+  ;; here it is
   (message (interface remote-object) message-contents))
 
+;; the classes that inherit from remote-object should specialize remote-symbol.
 (define-class browser-view (remote-object)
   ((options
     ""
@@ -297,3 +310,16 @@ See https://www.electronjs.org/docs/latest/api/structures/custom-scheme."))
           (loop for protocol in protocols
                 collect (scheme-name protocol)
                 collect (privileges protocol))))
+
+;; issues:
+
+;; ulimit -a | grep files (EMFILE error)
+
+;; fix error on input handling (surround by ignore-errors)
+
+;; fix the fact that sync sockets aren't deleted on quit (meaning that it goes
+;; beyond the scope of npm)
+
+;; delete PR that does "garbage collection"
+
+;; attach response sockets to objects.
