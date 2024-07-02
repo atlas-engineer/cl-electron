@@ -18,7 +18,7 @@
            (lambda (response)
              (cl-json:encode-json-to-string
               (list (cons "preventDefault"
-                          (not (null (apply callback (cons browser-window response))))))))
+                          (apply callback (cons browser-window response))))))
            :interface (interface browser-window)
            :loop-connect-p t)))
     (message
