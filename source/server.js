@@ -10,8 +10,8 @@ if (process.argv.length != 3) {
   process.exit(1);
 }
 
-const path = require('path')
-const nodejs_net = require('net');
+const path = require('node:path')
+const nodejs_net = require('node:net');
 // The architecture of protocol handling resorts to a tmp file, meaning that the
 // main JS location may differ from the location of the current file.
 const SynchronousSocket = require(path.resolve('node_modules/synchronous-socket'));
