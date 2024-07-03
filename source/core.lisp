@@ -68,8 +68,7 @@ For each instruction it writes the result back to it."
   "Return the pathname of tmp file featuring the concatenation of file PATHNAME and string S."
   (uiop:with-temporary-file (:pathname p :keep t :type "js")
     (uiop:copy-file pathname p)
-    (when s
-      (str:to-file p s :if-exists :append))
+    (when s (str:to-file p s :if-exists :append))
     p))
 
 (defmethod (setf protocols) (value (interface interface))
