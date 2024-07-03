@@ -21,7 +21,7 @@
     "electron.socket"
     :export t
     :documentation "The name of the server socket.
-See `electron-socket-path'.")
+See `server-socket-path'.")
    (socket-threads
     '()
     :documentation "A list of threads connected to sockets used by the system.")
@@ -56,7 +56,8 @@ required to be registered there."))
   (:export-accessor-names-p t)
   (:documentation "Interface with an Electron instance."))
 
-(defmethod electron-socket-path ((interface interface))
+(export-always 'server-socket-path)
+(defmethod server-socket-path ((interface interface))
   "The Electron process listens to this socket to execute JavaScript.
 For each instruction it writes the result back to it."
   (with-slots (sockets-directory server-socket-name) interface
@@ -101,16 +102,16 @@ For each instruction it writes the result back to it."
              :report "Kill the existing interface and start a new one."
              (terminate interface))))
         (t
-         (when (uiop:file-exists-p (electron-socket-path interface))
+         (when (uiop:file-exists-p (server-socket-path interface))
            (restart-case (error (make-condition 'socket-exists-error))
              (destroy ()
                :report "Destroy the existing socket."
-               (uiop:delete-file-if-exists (electron-socket-path interface)))))
+               (uiop:delete-file-if-exists (server-socket-path interface)))))
          (setf (process interface)
                (uiop:launch-program `("npm" "start" "--"
                                       ,@(mapcar #'uiop:native-namestring
                                                 (list (server-path interface)
-                                                      (electron-socket-path interface))))
+                                                      (server-socket-path interface))))
                                     :output :interactive
                                     :directory (asdf:system-source-directory :cl-electron)))
          ;; Block until the socket is ready and responding with evaluated code.
@@ -196,7 +197,7 @@ For each instruction it writes the result back to it."
     ;; meaning that is may persistent for a while. It is safer to delete it
     ;; right away, otherwise chaining `terminate' and `launch' could raise
     ;; `socket-exists-error'.
-    (uiop:delete-file-if-exists (electron-socket-path interface))
+    (uiop:delete-file-if-exists (server-socket-path interface))
     (uiop:terminate-process (process interface))
     (setf (process interface) nil)))
 
@@ -233,7 +234,7 @@ For each instruction it writes the result back to it."
 (defmethod message ((interface interface) message-contents)
   (iolib:with-open-socket (s :address-family :local
                              :remote-filename (uiop:native-namestring
-                                               (electron-socket-path interface)))
+                                               (server-socket-path interface)))
     (write-line message-contents s)
     (finish-output s)
     (read-line s)))
