@@ -14,6 +14,8 @@
     (ensure-directories-exist (pathname "~/Library/Caches/TemporaryItems/cl-electron/")
                               :mode #o700)
     :export t
+    :reader t
+    :writer nil
     :documentation "The directory where sockets are stored.")
    (electron-socket-name
     "electron.socket"
@@ -30,7 +32,7 @@ See `electron-socket-path'.")
     nil
     ;; The slot can't be set at initialization since protocol objects inherit
     ;; from remote-object, whose `interface' slot is only set after an object of
-    ;; class interface has been initialized.
+    ;; class `interface' has been initialized.
     :initarg nil
     :export t
     :reader t
@@ -50,7 +52,8 @@ All of its content is evaluated before the app signals the ready event.  Not
 meant to be overwritten but rather appended.  For instance, `protocols' are
 required to be registered there."))
   (:export-class-name-p t)
-  (:predicate-name-transformer 'nclasses:always-dashed-predicate-name-transformer)
+  (:export-predicate-name-p t)
+  (:export-accessor-names-p t)
   (:documentation "Interface with an Electron instance."))
 
 (defmethod electron-socket-path ((interface interface))
@@ -223,6 +226,8 @@ For each instruction it writes the result back to it."
     :export t
     :documentation "A list of threads connected to sockets used by this object."))
   (:export-class-name-p t)
+  (:export-predicate-name-p t)
+  (:export-accessor-names-p t)
   (:documentation "Represent objects living in Electron."))
 
 (defmethod message ((interface interface) message-contents)
@@ -244,7 +249,10 @@ For each instruction it writes the result back to it."
     :writer nil
     :type string
     :documentation "A string that specifies the views's behavior."))
-  (:export-class-name-p t))
+  (:export-class-name-p t)
+  (:export-predicate-name-p t)
+  (:export-accessor-names-p t)
+  (:documentation "TODO"))
 
 (define-class browser-window (remote-object)
   ((options
@@ -254,11 +262,17 @@ For each instruction it writes the result back to it."
     :writer nil
     :type string
     :documentation "A string that specifies the window's behavior."))
-  (:export-class-name-p t))
+  (:export-class-name-p t)
+  (:export-predicate-name-p t)
+  (:export-accessor-names-p t)
+  (:documentation "TODO"))
 
 (define-class web-contents (remote-object)
   ()
-  (:export-class-name-p t))
+  (:export-class-name-p t)
+  (:export-predicate-name-p t)
+  (:export-accessor-names-p t)
+  (:documentation "TODO"))
 
 (define-class protocol (remote-object)
   ((scheme-name
@@ -278,7 +292,9 @@ HTTPS is an example of a scheme.")
     :documentation "A string that specifies the scheme's privileges.
 See https://www.electronjs.org/docs/latest/api/structures/custom-scheme."))
   (:export-class-name-p t)
-  (:export-predicate-name-p t))
+  (:export-predicate-name-p t)
+  (:export-accessor-names-p t)
+  (:documentation "TODO"))
 
 (defun list-of-protocols-p (list)
   "Return non-nil when LIST is non-nil and elements are of type `protocol'."
