@@ -9,9 +9,10 @@
 (define-class interface ()
   ((socket-directory
     #-darwin
-    (ensure-directories-exist (uiop:xdg-runtime-dir "cl-electron/"))
+    (ensure-directories-exist (uiop:xdg-runtime-dir "cl-electron/") :mode #o700)
     #+darwin
-    (ensure-directories-exist (pathname "~/Library/Caches/TemporaryItems/cl-electron/"))
+    (ensure-directories-exist (pathname "~/Library/Caches/TemporaryItems/cl-electron/")
+                              :mode #o700)
     :export t
     :documentation "The directory where sockets are stored.")
    (electron-socket-name
@@ -124,10 +125,7 @@ For each instruction it writes the result back to it."
        (iolib:with-open-socket (s :address-family :local
                                   :connect :passive
                                   :local-filename path)
-         (setf (iolib/os:file-permissions path)
-               (set-difference (iolib/os:file-permissions path)
-                               '(:group-read :group-write :group-exec
-                                 :other-read :other-write :other-exec)))
+         (isys:chmod path #o600)
          (when ready-semaphore (bt:signal-semaphore ready-semaphore))
          (loop do (iolib:with-accept-connection (connection s)
                     (loop for expr = (read-line connection nil)

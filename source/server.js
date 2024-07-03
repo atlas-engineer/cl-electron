@@ -12,6 +12,7 @@ if (process.argv.length != 3) {
 
 const path = require('node:path')
 const nodejs_net = require('node:net');
+const fs = require('node:fs');
 // The architecture of protocol handling resorts to a tmp file, meaning that the
 // main JS location may differ from the location of the current file.
 const SynchronousSocket = require(path.resolve('node_modules/synchronous-socket'));
@@ -28,7 +29,10 @@ app.on('ready', () => {
             }
         });
     });
-    server.listen(process.argv[2]);
+    server_socket_path = process.argv[2];
+    server.listen(server_socket_path, () => {
+        fs.chmodSync(server_socket_path, 0o600)
+    });
 });
 
 ////////////////////////////////////////////////////////////////////////////////
