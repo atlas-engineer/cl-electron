@@ -75,8 +75,8 @@ For each instruction it writes the result back to it."
   (if (alive-p interface)
       (error "Protocols need to be set before launching ~a." interface)
       (with-slots (protocols server-path) interface
-        (setf protocols value)
-        (setf server-path (to-tmp-file server-path (register protocols))))))
+        (setf server-path (to-tmp-file server-path (register value)))
+        (setf protocols value))))
 
 (defmethod interface-equal ((interface1 interface) (interface2 interface))
   "Return non-nil when interfaces are equal."
