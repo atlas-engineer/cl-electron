@@ -63,6 +63,14 @@ For each instruction it writes the result back to it."
   (with-slots (sockets-directory server-socket-name) interface
     (uiop:merge-pathnames* sockets-directory server-socket-name)))
 
+(export-always 'server-running-p)
+(defmethod server-running-p ((interface interface))
+  "Whether the Electron server is listening."
+  (iolib:with-open-socket (s :address-family :local
+                             :remote-filename (uiop:native-namestring
+                                               (server-socket-path interface)))
+    (iolib:socket-connected-p s)))
+
 (defmethod alive-p ((interface interface))
   "Whether the INTERFACE's Electron process is running."
   (with-slots (process) interface
@@ -114,9 +122,10 @@ For each instruction it writes the result back to it."
                                                       (server-socket-path interface))))
                                     :output :interactive
                                     :directory (asdf:system-source-directory :cl-electron)))
-         ;; Block until the socket is ready and responding with evaluated code.
-         (loop for probe = (ignore-errors (message interface "0"))
-               until (equalp "0" probe)))))
+         ;; Block until the server is listening.
+         (loop until (handler-case (server-running-p interface)
+                       ;; Signals that the server socket doesn't exist.
+                       (iolib/syscalls:enoent () (sleep 0.1)))))))
 
 (defun create-socket-path (&key (interface *interface*) (id (new-integer-id)))
   "Generate a new path suitable for a socket."
