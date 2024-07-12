@@ -206,10 +206,10 @@
 (export-always 'execute-javascript-with-promise-callback)
 (defmethod execute-javascript-with-promise-callback
     ((web-contents web-contents) code callback &key (user-gesture "false"))
-  (let ((socket-thread-id
-          (create-node-socket-thread (lambda (response)
-                                       (apply callback (cons web-contents response)))
-                                     :interface (interface web-contents))))
+  (multiple-value-bind (thread-id socket-thread socket-path)
+      (create-node-socket-thread (lambda (response)
+                                   (apply callback (cons web-contents response)))
+                                 :interface (interface web-contents))
     (message
      web-contents
      (format nil "~a.executeJavaScript(`~a`, ~a).then((value) => {
@@ -217,7 +217,8 @@
                     ~a.write(`${jsonString}\\n`);}).catch(error => {
                       ~a.write('[\"ERROR\"]\\n');});"
              (remote-symbol web-contents) (%quote-js code) user-gesture
-             socket-thread-id socket-thread-id))))
+             thread-id thread-id))
+    (values thread-id socket-thread socket-path)))
 
 (export-always 'on)
 (defmethod on ((web-contents web-contents) event-name code)
@@ -242,19 +243,24 @@
 (defmethod execute-javascript-synchronous ((web-contents web-contents) code
                                            &key (user-gesture "false"))
   (let ((p (lparallel:promise)))
-    (execute-javascript-with-promise-callback
-     web-contents
-     code
-     (lambda (web-contents result)
-       (declare (ignore web-contents))
-       (if (equal result "ERROR")
-           (restart-case (error (make-condition 'javascript-renderer-error :code code))
-             (ignore ()
-               :report "Ignore error, fulfill promise with string 'ERROR'."
-               (lparallel:fulfill p result))
-             (reject ()
-               :report "Return nil, indicating promise rejection."
-               (lparallel:fulfill p nil)))
-           (lparallel:fulfill p result)))
-     :user-gesture user-gesture)
-    (lparallel:force p)))
+    (multiple-value-bind (thread-id socket-thread socket-path)
+        (execute-javascript-with-promise-callback
+         web-contents
+         code
+         (lambda (web-contents result)
+           (declare (ignore web-contents))
+           (if (equal result "ERROR")
+               (restart-case (error (make-condition 'javascript-renderer-error :code code))
+                 (ignore ()
+                   :report "Ignore error, fulfill promise with string 'ERROR'."
+                   (lparallel:fulfill p result))
+                 (reject ()
+                   :report "Return nil, indicating promise rejection."
+                   (lparallel:fulfill p nil)))
+               (lparallel:fulfill p result)))
+         :user-gesture user-gesture)
+      (declare (ignore socket-path thread-id))
+      (prog1 (lparallel:force p)
+        ;; Kill server and connections spawned by
+        ;; `execute-javascript-with-promise-callback'.
+        (bt:destroy-thread socket-thread)))))
