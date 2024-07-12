@@ -231,6 +231,18 @@ For each instruction it writes the result back to it."
   (:export-accessor-names-p t)
   (:documentation "Represent objects living in Electron."))
 
+;; (defgeneric message (receiver content)
+;;   (:method ((interface interface) content)
+;;     (iolib:with-open-socket (s :address-family :local
+;;                                :remote-filename (uiop:native-namestring
+;;                                                  (server-socket-path interface)))
+;;       (write-line content s)
+;;       (finish-output s)
+;;       (read-line s)))
+;;   (:method ((remote-object remote-object) content)
+;;     (message (interface remote-object) content))
+;;   (:documentation "TODO"))
+
 (defmethod message ((interface interface) message-contents)
   (iolib:with-open-socket (s :address-family :local
                              :remote-filename (uiop:native-namestring
