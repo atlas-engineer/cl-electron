@@ -175,10 +175,15 @@ For each instruction it writes the result back to it."
       (message interface (format nil "~a.connect();" thread-id))
       (values thread-id socket-thread socket-path))))
 
+(defun destroy-thread* (thread)
+  "Like `bt:destroy-thread' but does not raise an error.
+Particularly useful to avoid errors on already terminated threads."
+  (ignore-errors (bt:destroy-thread thread)))
+
 (export-always 'terminate)
 (defun terminate (&optional (interface *interface*))
   (when (and (process interface) (uiop:process-alive-p (process interface)))
-    (mapcar #'bt:destroy-thread (socket-threads interface))
+    (mapcar #'destroy-thread* (socket-threads interface))
     ;; `uiop:terminate-process' sends an async signal to delete the socket,
     ;; meaning that is may persistent for a while. It is safer to delete it
     ;; right away, otherwise chaining `terminate' and `launch' could raise
