@@ -24,7 +24,8 @@
                        30)
             :vertical-p nil)
   (electron:on-event (electron:web-contents main-view) "did-finish-load"
-                     (lambda (web-contents) (setf (url main-view) (electron:get-url web-contents))))
+                     (lambda (web-contents)
+                       (setf (url main-view) (electron:get-url web-contents))))
   (electron:load-url main-view "https://en.wikipedia.org/wiki/Electron")
   (print (electron:execute-javascript-synchronous (electron:web-contents main-view)
                                                   "1 + 1")))
