@@ -5,7 +5,7 @@
 some CL libraries (consult [[file:cl-electron.asd][cl-electron.asd file]]).
 
 Run =npm install= from the project's root to install all Node.js dependencies
-(including Electron).
+(including Electron).  To update dependencies, run =npm update=.
 
 The CL dependencies can be handled via Guix, Nix or manually (see [[file:manifest.scm][Guix manifest]]
 and [[file:shell.nix][Nix shell]]).
