@@ -7,7 +7,7 @@
 (in-package :electron)
 
 (define-class interface ()
-  ((socket-directory
+  ((sockets-directory
     #-darwin
     (ensure-directories-exist (uiop:xdg-runtime-dir "cl-electron/") :mode #o700)
     #+darwin
@@ -59,8 +59,8 @@ required to be registered there."))
 (defmethod electron-socket-path ((interface interface))
   "The Electron process listens to this socket to execute JavaScript.
 For each instruction it writes the result back to it."
-  (with-slots (socket-directory server-socket-name) interface
-    (uiop:merge-pathnames* socket-directory server-socket-name)))
+  (with-slots (sockets-directory server-socket-name) interface
+    (uiop:merge-pathnames* sockets-directory server-socket-name)))
 
 (defmethod alive-p ((interface interface))
   "Whether the INTERFACE's Electron process is running."
@@ -119,7 +119,7 @@ For each instruction it writes the result back to it."
 
 (defun create-socket-path (&key (interface *interface*) (id (new-integer-id)))
   "Generate a new path suitable for a socket."
-  (uiop:merge-pathnames* (socket-directory interface) (format nil "~a.socket" id)))
+  (uiop:merge-pathnames* (sockets-directory interface) (format nil "~a.socket" id)))
 
 (defun create-socket (callback &key ready-semaphore
                                     (path (create-socket-path))
