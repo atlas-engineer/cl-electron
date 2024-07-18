@@ -166,8 +166,7 @@ For each instruction it writes the result back to it."
       (bt:wait-on-semaphore socket-ready-semaphore)
       (message
        interface
-       (format nil "~a = new nodejs_net.Socket().connect('~a', () => { ~a.setNoDelay(true); });"
-               thread-id socket-path thread-id))
+       (format nil "~a = new nodejs_net.connect('~a');" thread-id socket-path))
       (values thread-id socket-thread socket-path))))
 
 (defun create-node-synchronous-socket-thread (callback &key (interface *interface*))
