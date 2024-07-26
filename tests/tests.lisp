@@ -18,15 +18,9 @@
        (electron:kill win))
      (electron:terminate)))
 
-(define-test js-handling-single-quote ()
+(define-test js-handling-quotes ()
   (with-electron-session
-    (let ((js (ps:ps "a'b'")))
-      (assert-string= (electron:execute-javascript-synchronous (electron:web-contents win) js)
-                      (electron::message (electron:interface win) js)))))
-
-(define-test js-handling-double-quote ()
-  (with-electron-session
-    (let ((js (ps:ps "a\"b\"")))
+    (let ((js (ps:ps "a'b'c\"d\"e`f`g")))
       (assert-string= (electron:execute-javascript-synchronous (electron:web-contents win) js)
                       (electron::message (electron:interface win) js)))))
 
@@ -38,14 +32,7 @@
 
 (define-test js-handling-doc ()
   (with-electron-session
-    (let ((html (spinneret:with-html-string (:head) (:body (:raw "a'b'")))))
-      (assert-string=
-       html
-       (electron:execute-javascript-synchronous
-        (electron:web-contents win)
-        (ps:ps (setf (ps:chain document (get-elements-by-tag-name "html") 0 |innerHTML|)
-                     (ps:lisp html))))))
-    (let ((html (spinneret:with-html-string (:head) (:body (:raw "a\"b\"")))))
+    (let ((html (spinneret:with-html-string (:head) (:body (:raw "a'b'c\"d\"e`f`g")))))
       (assert-string=
        html
        (electron:execute-javascript-synchronous
