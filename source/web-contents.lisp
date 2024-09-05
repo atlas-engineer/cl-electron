@@ -183,7 +183,7 @@
     new-id))
 
 (defun %quote-js (js-code)
-  "Replace each backlash with 2 (unless a \" follows it) and escape backquotes."
+  "Replace each backslash with 2 (unless a \" follows it) and escape backquotes."
   (ppcre:regex-replace-all "`"
                            (ppcre:regex-replace-all "\\\\(?!\")" js-code "\\\\\\\\")
                            "\\\\`"))
