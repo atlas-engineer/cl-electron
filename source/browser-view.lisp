@@ -57,6 +57,9 @@ See `set-bounds' for the list of available parameters."
 
 (export-always 'web-contents)
 (defmethod web-contents ((browser-view browser-view))
+  ;; not good...
+  ;; should be a static id...
+  ;; add a slot to win and view?
   (let ((new-id (new-id)))
     (message
      browser-view

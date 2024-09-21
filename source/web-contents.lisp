@@ -184,6 +184,8 @@
 
 (defun %quote-js (js-code)
   "Replace each backslash with 2 (unless a \" follows it) and escape backquotes."
+  ;; (serapeum:escape (ppcre:regex-replace-all "\\\\(?!\")" js-code "\\\\\\\\")
+  ;;                  (serapeum:dict #\` "\\\\`"))
   (ppcre:regex-replace-all "`"
                            (ppcre:regex-replace-all "\\\\(?!\")" js-code "\\\\\\\\")
                            "\\\\`"))

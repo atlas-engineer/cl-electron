@@ -128,7 +128,7 @@ For each instruction it writes the result back to it."
                                       ,@(mapcar #'uiop:native-namestring
                                                 (list (server-path interface)
                                                       (server-socket-path interface))))
-                                    :output :interactive
+                                    :output t
                                     :directory (asdf:system-source-directory :cl-electron)))
          ;; Block until the server is listening.
          (loop until (handler-case (server-running-p interface)
@@ -227,6 +227,7 @@ Particularly useful to avoid errors on already terminated threads."
 
 (define-class remote-object ()
   ((remote-symbol
+    ;; this is cancer... make static ids.
     (new-id)
     :export t
     :reader t
@@ -272,9 +273,12 @@ Particularly useful to avoid errors on already terminated threads."
   (iolib:with-open-socket (s :address-family :local
                              :remote-filename (uiop:native-namestring
                                                (server-socket-path interface)))
+    ;; debug
+    ;; (write-line message-contents)
     (write-line message-contents s)
     (finish-output s)
-    ;; why do we need to read?
+    ;; why do we need to read? to read the output of the message sent (or error
+    ;; message.)
     (read-line s)))
 
 (defmethod message ((remote-object remote-object) message-contents)

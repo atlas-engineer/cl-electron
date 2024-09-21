@@ -174,6 +174,7 @@ See `set-bounds' for the list of available parameters."
 
 (export-always 'web-contents)
 (defmethod web-contents ((browser-window browser-window))
+  ;; not good...
   (let ((new-id (new-id)))
     (message
      browser-window
