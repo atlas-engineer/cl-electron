@@ -9,7 +9,13 @@
   (message
    browser-window
    (format nil "~a = new BrowserWindow(~a);"
-           (remote-symbol browser-window) (options browser-window))))
+           (remote-symbol browser-window) (options browser-window)))
+  ;; (electron:on-event browser-window "closed"
+  ;;                    (lambda (win)
+  ;;                      (mapcar #'bt:destroy-thread
+  ;;                              (append (socket-threads win)
+  ;;                                      (socket-threads (web-contents win))))))
+  )
 
 (export-always 'register-before-input-event)
 (defmethod register-before-input-event ((browser-window browser-window) callback)
@@ -19,8 +25,7 @@
              (cl-json:encode-json-to-string
               (list (cons "preventDefault"
                           (apply callback (cons browser-window response))))))
-           :interface (interface browser-window)
-           :loop-connect-p t)))
+           :interface (interface browser-window))))
     (message
      browser-window
      (format nil
@@ -169,6 +174,7 @@ See `set-bounds' for the list of available parameters."
 
 (export-always 'web-contents)
 (defmethod web-contents ((browser-window browser-window))
+  ;; not good...
   (let ((new-id (new-id)))
     (message
      browser-window

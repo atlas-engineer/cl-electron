@@ -9,7 +9,13 @@
   (message
    browser-view
    (format nil "~a = new BrowserView(~a)"
-           (remote-symbol browser-view) (options browser-view))))
+           (remote-symbol browser-view) (options browser-view)))
+  ;; (electron:on-event browser-view "closed"
+  ;;                    (lambda (view)
+  ;;                      (mapcar #'bt:destroy-thread
+  ;;                              (append (socket-threads view)
+  ;;                                      (socket-threads (web-contents view))))))
+  )
 
 (export-always 'set-bounds)
 (defmethod set-bounds ((browser-view browser-view) x y width height)
@@ -51,6 +57,9 @@ See `set-bounds' for the list of available parameters."
 
 (export-always 'web-contents)
 (defmethod web-contents ((browser-view browser-view))
+  ;; not good...
+  ;; should be a static id...
+  ;; add a slot to win and view?
   (let ((new-id (new-id)))
     (message
      browser-view
@@ -67,8 +76,7 @@ See `set-bounds' for the list of available parameters."
              (cl-json:encode-json-to-string
               (list (cons "preventDefault"
                           (not (null (apply callback (cons browser-view response))))))))
-           :interface (interface browser-view)
-           :loop-connect-p t)))
+           :interface (interface browser-view))))
     (message
      browser-view
      (format nil

@@ -21,12 +21,13 @@ const { app, ipcMain, BrowserView, BrowserWindow, webContents, protocol, net } =
 app.on('ready', () => {
     const server = nodejs_net.createServer((socket) => {
         socket.on('data', (data) => {
-            try {
-                const result = eval(data.toString());
-                socket.write(`${result}\n`);
-            } catch (err) {
-                socket.write(`${err}\n`);
-            }
+            const result = eval(data.toString());
+            socket.write(`${result}\n`);
+        })
+        // This statement catches write errors.  Debug them.
+        // How to catch eval errors?
+        socket.on('error', (err) => {
+            console.log(err);
         });
     });
     server_socket_path = process.argv[2];
