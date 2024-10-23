@@ -13,7 +13,6 @@
                cl-json
                iolib
                iolib/os
-               str
                cl-ppcre
                nclasses
                bordeaux-threads

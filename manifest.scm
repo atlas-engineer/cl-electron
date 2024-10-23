@@ -22,5 +22,4 @@
        cl-parenscript
        cl-ppcre
        cl-spinneret
-       cl-str
        cl-json))
