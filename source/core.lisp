@@ -238,7 +238,14 @@ For each instruction it writes the result back to it."
   (message (interface remote-object) message-contents))
 
 (define-class browser-view (remote-object)
-  ((options
+  ((web-contents
+    nil
+    :export t
+    :reader nil
+    :writer t
+    :type web-contents
+    :documentation "The `web-contents' object bound to the view.")
+   (options
     ""
     :export t
     :reader t
@@ -248,7 +255,14 @@ For each instruction it writes the result back to it."
   (:export-class-name-p t))
 
 (define-class browser-window (remote-object)
-  ((options
+  ((web-contents
+    nil
+    :export t
+    :reader nil
+    :writer t
+    :type web-contents
+    :documentation "The `web-contents' object bound to the window.")
+   (options
     "{autoHideMenuBar: true}"
     :export t
     :reader t

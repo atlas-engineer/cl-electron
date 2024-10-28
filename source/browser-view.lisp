@@ -51,13 +51,15 @@ See `set-bounds' for the list of available parameters."
 
 (export-always 'web-contents)
 (defmethod web-contents ((browser-view browser-view))
-  (let ((new-id (new-id)))
-    (message
-     browser-view
-     (format nil "~a = ~a.webContents" new-id (remote-symbol browser-view)))
-    (make-instance 'web-contents
-                   :remote-symbol new-id
-                   :interface (interface browser-view))))
+  (or (slot-value browser-view 'web-contents)
+      (let ((new-id (new-id)))
+        (message
+         browser-view
+         (format nil "~a = ~a.webContents" new-id (remote-symbol browser-view)))
+        (setf (slot-value browser-view 'web-contents)
+              (make-instance 'web-contents
+                             :remote-symbol new-id
+                             :interface (interface browser-view))))))
 
 (export-always 'register-before-input-event)
 (defmethod register-before-input-event ((browser-view browser-view) callback)

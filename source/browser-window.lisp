@@ -169,13 +169,15 @@ See `set-bounds' for the list of available parameters."
 
 (export-always 'web-contents)
 (defmethod web-contents ((browser-window browser-window))
-  (let ((new-id (new-id)))
-    (message
-     browser-window
-     (format nil "~a = ~a.webContents" new-id (remote-symbol browser-window)))
-    (make-instance 'web-contents
-                   :remote-symbol new-id
-                   :interface (interface browser-window))))
+  (or (slot-value browser-window 'web-contents)
+      (let ((new-id (new-id)))
+        (message
+         browser-window
+         (format nil "~a = ~a.webContents" new-id (remote-symbol browser-window)))
+        (setf (slot-value browser-window 'web-contents)
+              (make-instance 'web-contents
+                             :remote-symbol new-id
+                             :interface (interface browser-window))))))
 
 (export-always 'get-child-windows)
 (defmethod get-child-windows ((browser-window browser-window))
