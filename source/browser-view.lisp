@@ -74,14 +74,16 @@ See `set-bounds' for the list of available parameters."
     (message
      browser-view
      (format nil
-             "~a.webContents.on('before-input-event', (event, input) => {
+             "~a.on('before-input-event', (event, input) => {
                   ~a.write(JSON.stringify([ input ]) + '\\\n');
                   response = ~a.read();
                   if (JSON.parse(response.toString()).preventDefault) {
                     event.preventDefault();
                   }
                 })"
-             (remote-symbol browser-view) synchronous-socket-id synchronous-socket-id))))
+             (remote-symbol (web-contents browser-view))
+             synchronous-socket-id
+             synchronous-socket-id))))
 
 ;; Helpers
 
