@@ -180,10 +180,9 @@ For each instruction it writes the result back to it."
       (bt:wait-on-semaphore socket-ready-semaphore)
       (message
        interface
-       (format nil
-               "~a = new SynchronousSocket.SynchronousSocket('~a');
-                ~a.connect()"
-               thread-id socket-path thread-id))
+       (format nil "~a = new SynchronousSocket.SynchronousSocket('~a');"
+               thread-id socket-path))
+      (message interface (format nil "~a.connect();" thread-id))
       (values thread-id socket-thread socket-path))))
 
 (export-always 'terminate)
