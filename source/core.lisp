@@ -63,6 +63,14 @@ For each instruction it writes the result back to it."
   (with-slots (sockets-directory server-socket-name) interface
     (uiop:merge-pathnames* sockets-directory server-socket-name)))
 
+(export-always 'server-running-p)
+(defmethod server-running-p ((interface interface))
+  "Whether the Electron server is listening."
+  (iolib:with-open-socket (s :address-family :local
+                             :remote-filename (uiop:native-namestring
+                                               (server-socket-path interface)))
+    (iolib:socket-connected-p s)))
+
 (defmethod alive-p ((interface interface))
   "Whether the INTERFACE's Electron process is running."
   (with-slots (process) interface
@@ -114,73 +122,59 @@ For each instruction it writes the result back to it."
                                                       (server-socket-path interface))))
                                     :output :interactive
                                     :directory (asdf:system-source-directory :cl-electron)))
-         ;; Block until the socket is ready and responding with evaluated code.
-         (loop for probe = (ignore-errors (message interface "0"))
-               until (equalp "0" probe)))))
+         ;; Block until the server is listening.
+         (loop until (handler-case (server-running-p interface)
+                       ;; Signals that the server socket doesn't exist.
+                       (iolib/syscalls:enoent () (sleep 0.1)))))))
 
 (defun create-socket-path (&key (interface *interface*) (id (new-integer-id)))
   "Generate a new path suitable for a socket."
   (uiop:merge-pathnames* (sockets-directory interface) (format nil "~a.socket" id)))
 
-(defun create-socket (callback &key ready-semaphore
-                                    (path (create-socket-path))
-                                    (loop-connect-p t))
+(defun create-socket (callback &key ready-semaphore (path (create-socket-path)))
   (unwind-protect
        (iolib:with-open-socket (s :address-family :local
                                   :connect :passive
                                   :local-filename path)
          (isys:chmod path #o600)
          (when ready-semaphore (bt:signal-semaphore ready-semaphore))
-         (loop do (iolib:with-accept-connection (connection s)
-                    (loop for expr = (read-line connection nil)
-                          until (null expr)
-                          do (unless (uiop:emptyp expr)
-                               (let* ((decoded-object (cl-json:decode-json-from-string expr))
-                                      (callback-result (funcall callback decoded-object)))
-                                 (when (stringp callback-result)
-                                   (write-line callback-result connection)
-                                   (write-line "" connection)
-                                   (finish-output connection))))))
-               while loop-connect-p))
+         (iolib:with-accept-connection (connection s)
+           (loop for message = (ignore-errors (read-line connection nil))
+                 for decoded-object = (cl-json:decode-json-from-string message)
+                 for callback-result = (funcall callback decoded-object)
+                 when (stringp callback-result)
+                   do (write-line (concatenate 'string callback-result "") connection)
+                      (finish-output connection))))
     (uiop:delete-file-if-exists path)))
 
-(defun create-socket-thread (callback &key ready-semaphore
-                                           (interface *interface*)
-                                           (loop-connect-p t))
+(defun create-socket-thread (callback &key ready-semaphore (interface *interface*))
   (let* ((id (new-id))
          (socket-path (uiop:native-namestring (create-socket-path :id id)))
          (socket-thread (bt:make-thread
                          (lambda ()
                            (create-socket callback
                                           :path socket-path
-                                          :ready-semaphore ready-semaphore
-                                          :loop-connect-p loop-connect-p)))))
+                                          :ready-semaphore ready-semaphore)))))
     (push socket-thread (socket-threads interface))
     (values id socket-thread socket-path)))
 
-(defun create-node-socket-thread (callback &key (interface *interface*)
-                                                (loop-connect-p nil))
+(defun create-node-socket-thread (callback &key (interface *interface*))
   (let ((socket-ready-semaphore (bt:make-semaphore)))
     (multiple-value-bind (thread-id socket-thread socket-path)
         (create-socket-thread callback
-                              :ready-semaphore socket-ready-semaphore
-                              :loop-connect-p loop-connect-p)
+                              :ready-semaphore socket-ready-semaphore)
       (bt:wait-on-semaphore socket-ready-semaphore)
       (message
        interface
-       (format nil "~a = new nodejs_net.Socket().connect('~a', () => { ~a.setNoDelay(true); });"
-               thread-id socket-path thread-id))
+       (format nil "~a = new nodejs_net.connect('~a');" thread-id socket-path))
       (values thread-id socket-thread socket-path))))
 
-(defun create-node-synchronous-socket-thread (callback &key (interface *interface*)
-                                                       (loop-connect-p nil))
+(defun create-node-synchronous-socket-thread (callback &key (interface *interface*))
   "Caution: SynchronousSocket blocks Node.js and can lead to deadlocks."
   (let ((socket-ready-semaphore (bt:make-semaphore)))
     (multiple-value-bind (thread-id socket-thread socket-path)
-        (create-socket-thread
-         callback
-         :ready-semaphore socket-ready-semaphore
-         :loop-connect-p loop-connect-p)
+        (create-socket-thread callback
+                              :ready-semaphore socket-ready-semaphore)
       (bt:wait-on-semaphore socket-ready-semaphore)
       (message
        interface
@@ -189,10 +183,15 @@ For each instruction it writes the result back to it."
       (message interface (format nil "~a.connect();" thread-id))
       (values thread-id socket-thread socket-path))))
 
+(defun destroy-thread* (thread)
+  "Like `bt:destroy-thread' but does not raise an error.
+Particularly useful to avoid errors on already terminated threads."
+  (ignore-errors (bt:destroy-thread thread)))
+
 (export-always 'terminate)
 (defun terminate (&optional (interface *interface*))
   (when (and (process interface) (uiop:process-alive-p (process interface)))
-    (mapcar #'bt:destroy-thread (socket-threads interface))
+    (mapcar #'destroy-thread* (socket-threads interface))
     ;; `uiop:terminate-process' sends an async signal to delete the socket,
     ;; meaning that is may persistent for a while. It is safer to delete it
     ;; right away, otherwise chaining `terminate' and `launch' could raise
