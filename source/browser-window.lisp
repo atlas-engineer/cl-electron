@@ -24,14 +24,16 @@
     (message
      browser-window
      (format nil
-             "~a.webContents.on('before-input-event', (event, input) => {
+             "~a.on('before-input-event', (event, input) => {
                   ~a.write(JSON.stringify([ input ]) + '\\\n');
                   response = ~a.read();
                   if (JSON.parse(response.toString()).preventDefault) {
                     event.preventDefault();
                   }
                 })"
-             (remote-symbol browser-window) synchronous-socket-id synchronous-socket-id))))
+             (remote-symbol (web-contents browser-window))
+             synchronous-socket-id
+             synchronous-socket-id))))
 
 (export-always 'load-url)
 (defmethod load-url ((browser-window browser-window) url)
