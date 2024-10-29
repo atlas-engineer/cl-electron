@@ -117,10 +117,11 @@ For each instruction it writes the result back to it."
                (uiop:delete-file-if-exists (server-socket-path interface)))))
          (setf (process interface)
                (uiop:launch-program `("npm" "start" "--"
-                                      ,@(mapcar #'uiop:native-namestring
-                                                (list (server-path interface)
-                                                      (server-socket-path interface))))
-                                    :output :interactive
+                                            ,@(mapcar #'uiop:native-namestring
+                                                      (list (server-path interface)
+                                                            (server-socket-path interface))))
+                                    :output t
+                                    :error-output t
                                     :directory (asdf:system-source-directory :cl-electron)))
          ;; Block until the server is listening.
          (loop until (handler-case (server-running-p interface)
