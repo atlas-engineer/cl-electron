@@ -242,7 +242,7 @@ Particularly useful to avoid errors on already terminated threads."
 (defmethod message ((remote-object remote-object) message-contents)
   (message (interface remote-object) message-contents))
 
-(define-class browser-view (remote-object)
+(define-class view (remote-object)
   ((web-contents
     nil
     :export t
@@ -256,15 +256,20 @@ Particularly useful to avoid errors on already terminated threads."
     :reader t
     :writer nil
     :type string
-    :documentation "A string that specifies the views's behavior."))
+    :documentation "A string that specifies the views's behavior.")
+   (bounds
+    nil
+    :export t
+    :type list
+    :documentation "The Rectangle object of view."))
   (:export-class-name-p t)
   (:export-predicate-name-p t)
   (:export-accessor-names-p t)
-  (:documentation "Embed additional web content into a `browser-window'.
+  (:documentation "Embed additional web content into a `window'.
 It is like a child window, except that it is positioned relative to its owning
 window."))
 
-(define-class browser-window (remote-object)
+(define-class window (remote-object)
   ((web-contents
     nil
     :export t
@@ -278,11 +283,28 @@ window."))
     :reader t
     :writer nil
     :type string
-    :documentation "A string that specifies the window's behavior."))
+    :documentation "A string that specifies the window's behavior.")
+   (bounds
+    nil
+    :export t
+    :type list
+    :documentation "The Rectangle object of window.")
+   (views
+    nil
+    :export t
+    :type (or list-of-views null)
+    :documentation "A list of `view's bound to window."))
   (:export-class-name-p t)
   (:export-predicate-name-p t)
   (:export-accessor-names-p t)
   (:documentation "Create and control browser windows."))
+
+(defun list-of-views-p (views)
+  "Return non-nil when LIST is non-nil and elements are of type `view'."
+  (and (consp views) (every #'viewp views)))
+
+(deftype list-of-views ()
+  '(and list (satisfies list-of-views-p)))
 
 (define-class web-contents (remote-object)
   ()

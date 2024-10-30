@@ -16,7 +16,7 @@ const fs = require('node:fs');
 // The architecture of protocol handling resorts to a tmp file, meaning that the
 // main JS location may differ from the location of the current file.
 const SynchronousSocket = require(path.resolve('node_modules/synchronous-socket'));
-const { app, ipcMain, BrowserView, BrowserWindow, webContents, protocol, net } = require('electron')
+const { app, ipcMain, BrowserWindow, WebContentsView, webContents, protocol, net } = require('electron')
 
 app.on('ready', () => {
     const server = nodejs_net.createServer((socket) => {

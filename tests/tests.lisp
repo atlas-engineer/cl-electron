@@ -12,7 +12,7 @@
      (setf electron:*interface*
            (make-instance 'electron:interface))
      (electron:launch)
-     (let ((win (make-instance 'electron:browser-window :options "{show: false}")))
+     (let ((win (make-instance 'electron:window :options "{show: false}")))
        (electron:load-url win "https://en.wikipedia.org/wiki/Electron")
        ,@body
        (electron:kill win))
