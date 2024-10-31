@@ -248,7 +248,7 @@ Particularly useful to avoid errors on already terminated threads."
     :export t
     :reader nil
     :writer t
-    :type web-contents
+    :type (or web-contents null)
     :documentation "The `web-contents' object bound to the view.")
    (options
     ""
@@ -270,7 +270,7 @@ window."))
     :export t
     :reader nil
     :writer t
-    :type web-contents
+    :type (or web-contents null)
     :documentation "The `web-contents' object bound to the window.")
    (options
     "{autoHideMenuBar: true}"
