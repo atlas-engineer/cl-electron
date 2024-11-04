@@ -9,7 +9,8 @@
   :author "Atlas Engineer LLC"
   :description "Common Lisp interface to Electron."
   :license "BSD 3-Clause"
-  :depends-on (uiop
+  :depends-on (alexandria
+               uiop
                cl-json
                iolib
                iolib/os

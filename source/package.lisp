@@ -4,7 +4,8 @@
 (uiop:define-package #:electron
   (:nicknames :cl-electron)
   (:use :cl)
-  (:import-from :nclasses :define-class))
+  (:import-from :nclasses :define-class)
+  (:import-from :alexandria :assoc-value))
 
 (in-package :electron)
 (defmacro export-always (symbols &optional (package nil package-supplied?))
