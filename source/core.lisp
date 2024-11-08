@@ -256,12 +256,7 @@ Particularly useful to avoid errors on already terminated threads."
     :reader t
     :writer nil
     :type string
-    :documentation "A string that specifies the views's behavior.")
-   (bounds
-    nil
-    :export t
-    :type list
-    :documentation "The Rectangle object of view."))
+    :documentation "A string that specifies the views's behavior."))
   (:export-class-name-p t)
   (:export-predicate-name-p t)
   (:export-accessor-names-p t)
@@ -284,11 +279,6 @@ window."))
     :writer nil
     :type string
     :documentation "A string that specifies the window's behavior.")
-   (bounds
-    nil
-    :export t
-    :type list
-    :documentation "The Rectangle object of window.")
    (views
     nil
     :export t

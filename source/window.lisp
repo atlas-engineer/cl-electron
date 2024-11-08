@@ -9,13 +9,7 @@
   (message
    window
    (format nil "~a = new BrowserWindow(~a);"
-           (remote-symbol window) (options window)))
-  (setf (bounds window) (get-bounds window))
-  (on-event window "resize"
-            (lambda (win)
-              (setf (bounds window) (get-bounds win))
-              (dolist (view (views window))
-                (setf (bounds view) (get-bounds view))))))
+           (remote-symbol window) (options window))))
 
 (export-always 'register-before-input-event)
 (defmethod register-before-input-event ((window window) callback)
@@ -165,11 +159,11 @@ When view is already bound to window, it is shown at the top."
 (defmacro add-bounded-view (window view &key window-bounds-alist-var x y width height)
   `(progn
      (add-view ,window ,view)
-     (let ((,window-bounds-alist-var (bounds ,window)))
+     (let ((,window-bounds-alist-var (get-bounds ,window)))
        (set-bounds ,view :x ,x :y ,y :width ,width :height ,height))
      (on-event ,window "resize"
                (lambda (win)
-                 (let ((,window-bounds-alist-var (bounds win)))
+                 (let ((,window-bounds-alist-var (get-bounds win)))
                    (set-bounds ,view :x ,x :y ,y :width ,width :height ,height))))))
 
 (export-always 'remove-view)

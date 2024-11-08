@@ -9,8 +9,7 @@
   (message
    view
    (format nil "~a = new WebContentsView(~a)"
-           (remote-symbol view) (options view)))
-  (on-event view "bounds-changed" (lambda (v) (setf (bounds view) (get-bounds v)))))
+           (remote-symbol view) (options view))))
 
 (export-always 'set-bounds)
 (defmethod set-bounds ((view view) &key x y width height)
