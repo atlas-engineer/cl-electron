@@ -158,13 +158,19 @@ When view is already bound to window, it is shown at the top."
 (export-always 'add-bounded-view)
 (defmacro add-bounded-view (window view &key window-bounds-alist-var x y width height)
   `(progn
-     (add-view ,window ,view)
      (let ((,window-bounds-alist-var (get-bounds ,window)))
        (set-bounds ,view :x ,x :y ,y :width ,width :height ,height))
-     (on-event ,window "resize"
-               (lambda (win)
-                 (let ((,window-bounds-alist-var (get-bounds win)))
-                   (set-bounds ,view :x ,x :y ,y :width ,width :height ,height))))))
+     ;; As to avoid adding an existing listener.  Note that `add-bounded-view'
+     ;; can be called multiple times over the same view and window, as to show
+     ;; the former on top.
+     (unless (find ,view (views ,window))
+       (on-event ,window "resize"
+                 (lambda (win)
+                   (let ((,window-bounds-alist-var (get-bounds win)))
+                     (set-bounds ,view :x ,x :y ,y :width ,width :height ,height)))))
+     ;; `add-view' is called after `set-bounds', since it pushes view into
+     ;; `views'.
+     (add-view ,window ,view)))
 
 (export-always 'remove-view)
 (defmethod remove-view ((window window) (view view))
