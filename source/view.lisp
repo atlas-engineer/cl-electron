@@ -52,7 +52,7 @@
            (lambda (response)
              (cl-json:encode-json-to-string
               (list (cons "preventDefault"
-                          (not (null (apply callback (cons view response))))))))
+                          (apply callback (cons view response))))))
            :interface (interface view))))
     (message
      view
