@@ -12,6 +12,7 @@
     "scripts": {
         "postinstall": "electron-builder install-app-deps",
         "start": "electron",
+        "debug": "electron --inspect",
         "repl": "electron -i"
     },
     "devDependencies": {

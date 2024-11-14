@@ -116,7 +116,7 @@ For each instruction it writes the result back to it."
                :report "Destroy the existing socket."
                (uiop:delete-file-if-exists (server-socket-path interface)))))
          (setf (process interface)
-               (uiop:launch-program `("npm" "start" "--"
+               (uiop:launch-program `("npm" "run" "start" "--"
                                             ,@(mapcar #'uiop:native-namestring
                                                       (list (server-path interface)
                                                             (server-socket-path interface))))
