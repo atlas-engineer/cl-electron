@@ -47,12 +47,11 @@
 
 (export-always 'muted-p)
 (defmethod muted-p ((web-contents web-contents))
-  (if (string-equal "true"
-                    (message web-contents
-                             (format nil "~a.isAudioMuted()"
-                                     (remote-symbol web-contents))))
-      t
-      nil))
+  (when (string-equal "true"
+                      (message web-contents
+                               (format nil "~a.isAudioMuted()"
+                                       (remote-symbol web-contents))))
+    t))
 
 (export-always 'set-user-agent)
 (defmethod set-user-agent ((web-contents web-contents) user-agent)
