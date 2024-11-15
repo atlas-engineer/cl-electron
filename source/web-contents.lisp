@@ -116,9 +116,11 @@
 
 (export-always 'is-focused)
 (defmethod is-focused ((web-contents web-contents))
-  (message
-   web-contents
-   (format nil "~a.isFocused()" (remote-symbol web-contents))))
+  (when (string-equal "true"
+                      (message
+                       web-contents
+                       (format nil "~a.isFocused()" (remote-symbol web-contents))))
+    t))
 
 (export-always 'undo)
 (defmethod undo ((web-contents web-contents))
