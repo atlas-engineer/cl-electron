@@ -143,20 +143,31 @@
    window
    (format nil "~a.getContentView()" (remote-symbol window))))
 
+(export-always 'view-count)
+(defmethod view-count ((window window))
+  (message
+   window
+   (format nil "~a.getContentView().children.length" (remote-symbol window))))
+
 (export-always 'add-view)
-(defmethod add-view ((window window) (view view))
+(defmethod add-view ((window window) (view view) &key z-index)
   "Add VIEW to WINDOW.
 
-When view is already bound to window, it is shown at the top."
+When Z-INDEX is omitted, its value corresponds to `view-count' (such that VIEW
+is shown as the topmost).
+
+When VIEW is already bound to window and Z-INDEX is omitted, the Z-INDEX of all
+of WINDOW's views is reset such VIEW is shown as the topmost."
   (pushnew view (views window))
   (message
    window
-   (format nil "~a.contentView.addChildView(~a)"
+   (format nil "~a.contentView.addChildView(~a~@[,~a~])"
            (remote-symbol window)
-           (remote-symbol view))))
+           (remote-symbol view)
+           z-index)))
 
 (export-always 'add-bounded-view)
-(defmacro add-bounded-view (window view &key window-bounds-alist-var x y width height)
+(defmacro add-bounded-view (window view &key z-index window-bounds-alist-var x y width height)
   `(progn
      (let ((,window-bounds-alist-var (get-bounds ,window)))
        (set-bounds ,view :x ,x :y ,y :width ,width :height ,height))
@@ -170,7 +181,7 @@ When view is already bound to window, it is shown at the top."
                      (set-bounds ,view :x ,x :y ,y :width ,width :height ,height)))))
      ;; `add-view' is called after `set-bounds', since it pushes view into
      ;; `views'.
-     (add-view ,window ,view)))
+     (add-view ,window ,view :z-index ,z-index)))
 
 (export-always 'remove-view)
 (defmethod remove-view ((window window) (view view))
