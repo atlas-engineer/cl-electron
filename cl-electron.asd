@@ -12,6 +12,7 @@
   :depends-on (alexandria
                uiop
                cl-json
+               cl-base64
                iolib
                iolib/os
                cl-ppcre
@@ -41,7 +42,7 @@
 
 (defsystem "cl-electron/examples"
   :pathname "examples"
-  :depends-on (cl-electron)
+  :depends-on (cl-electron lass spinneret)
   :components ((:file "package")
                (:file "example-window")
                (:file "example-views")
