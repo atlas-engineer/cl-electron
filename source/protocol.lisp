@@ -23,7 +23,9 @@
            (lambda (response)
              (cl-json:encode-json-to-string
               (multiple-value-bind (data-string data-type) (apply callback response)
-                (list (cons "dataString" data-string)
+                (list (cons "dataString" (if (typep data-string '(simple-array (unsigned-byte 8)))
+                                             (cl-base64:usb8-array-to-base64-string data-string)
+                                             (cl-base64:string-to-base64-string data-string)))
                       (cons "dataType" (or data-type "text/html;charset=utf8"))))))
            :interface (interface protocol))))
     (handle protocol
@@ -34,7 +36,8 @@
         ~a.write(`${jsonString}\\n`);
         new ProtocolSocket(~a, data => {
             const jsonObject = JSON.parse(data);
-            const newResponse = new Response(jsonObject.dataString, {
+            const _buffer = Buffer.from(jsonObject.dataString, 'base64');
+            const newResponse = new Response(_buffer, {
                 headers: { 'content-type': jsonObject.dataType }
             });
             resolve(newResponse);
