@@ -46,4 +46,5 @@
   :components ((:file "package")
                (:file "example-window")
                (:file "example-views")
-               (:file "example-protocol")))
+               (:file "example-protocol")
+               (:file "example-asset")))
