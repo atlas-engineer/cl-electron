@@ -8,6 +8,7 @@
 const path = require('node:path')
 const nodejs_net = require('node:net');
 const fs = require('node:fs');
+const emitter = require('node:events');
 // The architecture of protocol handling resorts to a tmp file, meaning that the
 // main JS location may differ from the location of the current file.
 const SynchronousSocket = require(path.resolve('node_modules/synchronous-socket'));
@@ -17,6 +18,8 @@ const { app, ipcMain, BrowserWindow, WebContentsView, webContents, protocol, net
 dialog.showErrorBox = function(title, content) {
     console.log(`${title}\n${content}`);
 };
+
+emitter.setMaxListeners(0)
 
 app.on('ready', () => {
     const server = nodejs_net.createServer((socket) => {
