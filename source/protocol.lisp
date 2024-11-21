@@ -20,20 +20,23 @@
 (defmethod handle-callback ((protocol protocol) callback)
   (let ((socket-thread-id
           (create-node-socket-thread
-           (lambda (response)
+           (lambda (url)
              (cl-json:encode-json-to-string
-              (multiple-value-bind (data-string data-type) (apply callback response)
-                (list (cons "dataString" (if (typep data-string '(simple-array (unsigned-byte 8)))
-                                             (cl-base64:usb8-array-to-base64-string data-string)
-                                             (cl-base64:string-to-base64-string data-string)))
+              (multiple-value-bind (data-string data-type) (funcall callback url)
+                (list (cons "dataString"
+                            (typecase data-string
+                              ((simple-array (unsigned-byte 8))
+                               (cl-base64:usb8-array-to-base64-string data-string))
+                              (string
+                               (cl-base64:string-to-base64-string data-string))
+                              (null "")))
                       (cons "dataType" (or data-type "text/html;charset=utf8"))))))
            :interface (interface protocol))))
     (handle protocol
             (format nil
 "(request) => {
     return new Promise((resolve, reject) => {
-        jsonString = JSON.stringify([ request.url ]);
-        ~a.write(`${jsonString}\\n`);
+        ~a.write(`${JSON.stringify(request.url)}\\n`);
         new ProtocolSocket(~a, data => {
             const jsonObject = JSON.parse(data);
             const _buffer = Buffer.from(jsonObject.dataString, 'base64');
