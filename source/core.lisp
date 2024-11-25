@@ -128,7 +128,7 @@ For each instruction it writes the result back to it."
                        ;; Signals that the server socket doesn't exist.
                        (iolib/syscalls:enoent () (sleep 0.1)))))))
 
-(defun create-socket-path (&key (interface *interface*) (id (new-integer-id)))
+(defun create-socket-path (&key (interface *interface*) (id (new-id)))
   "Generate a new path suitable for a socket."
   (uiop:merge-pathnames* (sockets-directory interface) (format nil "~a.socket" id)))
 
@@ -204,10 +204,6 @@ Particularly useful to avoid errors on already terminated threads."
 (defun new-id ()
   "Generate a new unique ID."
   (symbol-name (gensym "ID")))
-
-(defun new-integer-id ()
-  "Generate a new unique ID."
-  (parse-integer (symbol-name (gensym ""))))
 
 (define-class remote-object ()
   ((remote-symbol
