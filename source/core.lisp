@@ -336,3 +336,61 @@ See https://www.electronjs.org/docs/latest/api/structures/custom-scheme."))
           (loop for protocol in protocols
                 collect (scheme-name protocol)
                 collect (privileges protocol))))
+
+(export-always 'format-listener)
+(defun format-listener (object event-name callback-string &key once-p)
+  "Encoding helper for `add-listener'."
+  (format nil "~a.~a('~(~a~)', ~a)"
+          (remote-symbol object)
+          (if once-p "once" "on")
+          event-name
+          callback-string))
+
+(export-always 'add-listener)
+(defgeneric add-listener (object event-name callback &key once-p)
+  (:method (object (event-name symbol) (callback function) &key once-p)
+    (message
+     object
+     (format-listener object
+                      event-name
+                      ;; Send dummy JSON data to trigger the callback.
+                      (format nil "() => {~a.write(`${JSON.stringify('')}\\n`)}"
+                              (create-node-socket-thread (lambda (_) (declare (ignore _))
+                                                           (funcall callback object))
+                                                         :interface (interface object)))
+                      :once-p once-p)))
+  (:documentation "Register CALLBACK for OBJECT on event EVENT-NAME.
+
+Since the argument signature of callbacks differs depending on the event,
+methods must specialize on EVENT-NAME.  The general implementation assumes a
+callback that takes OBJECT as its sole argument.
+
+The callback is added to the end of the listeners array, without checking
+whether it has already been added.  Callbacks are invoked in the order that they
+were added.  When ONCE-P is non-nil, the callback runs once."))
+
+(defmethod add-listener ((object remote-object)
+                         (event (eql :before-input-event))
+                         (callback function)
+                         &key once-p)
+  (let ((synchronous-socket-id (create-node-synchronous-socket-thread
+                                (lambda (input)
+                                  (cl-json:encode-json-to-string
+                                   (list (cons "preventDefault"
+                                               (apply callback (cons object
+                                                                     input))))))
+                                :interface (interface object))))
+    (message
+     object
+     (format-listener (if (web-contents-p object) object (web-contents object))
+                      event
+                      (format nil
+                              "(event, input) => {
+                                 ~a.write(JSON.stringify([ input ]) + '\\\n');
+                                 response = ~a.read();
+                                 if (JSON.parse(response.toString()).preventDefault) {
+                                   event.preventDefault();
+                                 }
+                               }"
+                              synchronous-socket-id
+                              synchronous-socket-id)))))

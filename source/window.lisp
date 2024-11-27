@@ -11,29 +11,6 @@
    (format nil "~a = new BrowserWindow(~a);"
            (remote-symbol window) (options window))))
 
-(export-always 'register-before-input-event)
-(defmethod register-before-input-event ((window window) callback)
-  (let ((synchronous-socket-id
-          (create-node-synchronous-socket-thread
-           (lambda (response)
-             (cl-json:encode-json-to-string
-              (list (cons "preventDefault"
-                          (apply callback (cons window response))))))
-           :interface (interface window))))
-    (message
-     window
-     (format nil
-             "~a.on('before-input-event', (event, input) => {
-                  ~a.write(JSON.stringify([ input ]) + '\\\n');
-                  response = ~a.read();
-                  if (JSON.parse(response.toString()).preventDefault) {
-                    event.preventDefault();
-                  }
-                })"
-             (remote-symbol (web-contents window))
-             synchronous-socket-id
-             synchronous-socket-id))))
-
 (export-always 'load-url)
 (defmethod load-url ((window window) url)
   (message
@@ -175,10 +152,10 @@ of WINDOW's views is reset such VIEW is shown as the topmost."
      ;; can be called multiple times over the same view and window, as to show
      ;; the former on top.
      (unless (find ,view (views ,window))
-       (on-event ,window "resize"
-                 (lambda (win)
-                   (let ((,window-bounds-alist-var (get-bounds win)))
-                     (set-bounds ,view :x ,x :y ,y :width ,width :height ,height)))))
+       (add-listener ,window :resize
+                     (lambda (win)
+                       (let ((,window-bounds-alist-var (get-bounds win)))
+                         (set-bounds ,view :x ,x :y ,y :width ,width :height ,height)))))
      ;; `add-view' is called after `set-bounds', since it pushes view into
      ;; `views'.
      (add-view ,window ,view :z-index ,z-index)))
@@ -221,25 +198,6 @@ of WINDOW's views is reset such VIEW is shown as the topmost."
   (message
    window
    (format nil "~a.id" (remote-symbol window))))
-
-(export-always 'on)
-(defmethod on ((window window) event-name code)
-  (message
-   window
-   (format nil "~a.on('~a', () => {~a})" (remote-symbol window) event-name code)))
-
-(export-always 'on-event)
-(defmethod on-event ((window window) event-name callback)
-  (let ((socket-thread-id
-          (create-node-socket-thread (lambda (response)
-                                       (declare (ignore response))
-                                       (funcall callback window))
-                                     :interface (interface window))))
-    (on window event-name
-        (format nil
-                "jsonString = JSON.stringify([]);
-                 ~a.write(`${jsonString}\\n`);"
-                socket-thread-id))))
 
 ;; Static methods
 

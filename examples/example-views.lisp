@@ -14,9 +14,9 @@
                              :y 0
                              :width (assoc-value bounds :width)
                              :height (- (assoc-value bounds :height) 30))
-  (electron:on-event (electron:web-contents main-view) "did-finish-load"
-                     (lambda (web-contents)
-                       (setf (url main-view) (electron:get-url web-contents))))
+  (electron:add-listener (electron:web-contents main-view) :did-finish-load
+                         (lambda (web-contents)
+                           (setf (url main-view) (electron:get-url web-contents))))
   (electron:load-url main-view "https://en.wikipedia.org/wiki/Electron")
   (print (electron:execute-javascript-synchronous (electron:web-contents main-view)
                                                   "1 + 1")))

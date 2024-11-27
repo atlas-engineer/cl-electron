@@ -42,13 +42,10 @@
 
 (define-test sanitize-ipc-communication ()
   (with-electron-session
-    (electron:register-before-input-event win
-                                          (lambda (win input)
-                                            (declare (ignore win))
-                                            (print input) t))
-    (electron:on-event (electron:web-contents win)
-                       "did-finish-load"
-                       (lambda (web-contents) (declare (ignore web-contents)) t))
+    (electron:add-listener win :before-input-event
+                           (lambda (win input) (declare (ignore win)) (print input) t))
+    (electron:add-listener (electron:web-contents win) :did-finish-load
+                           (lambda (web-contents) (declare (ignore web-contents)) t))
     (dotimes (n 2000)
       (electron:execute-javascript-synchronous (electron:web-contents win)
                                                (ps:ps "hello world!"))))

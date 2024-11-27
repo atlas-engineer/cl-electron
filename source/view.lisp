@@ -45,48 +45,6 @@
                              :remote-symbol new-id
                              :interface (interface view))))))
 
-(export-always 'register-before-input-event)
-(defmethod register-before-input-event ((view view) callback)
-  (let ((synchronous-socket-id
-          (create-node-synchronous-socket-thread
-           (lambda (response)
-             (cl-json:encode-json-to-string
-              (list (cons "preventDefault"
-                          (apply callback (cons view response))))))
-           :interface (interface view))))
-    (message
-     view
-     (format nil
-             "~a.on('before-input-event', (event, input) => {
-                  ~a.write(JSON.stringify([ input ]) + '\\\n');
-                  response = ~a.read();
-                  if (JSON.parse(response.toString()).preventDefault) {
-                    event.preventDefault();
-                  }
-                })"
-             (remote-symbol (web-contents view))
-             synchronous-socket-id
-             synchronous-socket-id))))
-
-(export-always 'on)
-(defmethod on ((view view) event-name code)
-  (message
-   view
-   (format nil "~a.on('~a', () => {~a})" (remote-symbol view) event-name code)))
-
-(export-always 'on-event)
-(defmethod on-event ((view view) event-name callback)
-  (let ((socket-thread-id
-          (create-node-socket-thread (lambda (response)
-                                       (declare (ignore response))
-                                       (funcall callback view))
-                                     :interface (interface view))))
-    (on view event-name
-        (format nil
-                "jsonString = JSON.stringify([]);
-                 ~a.write(`${jsonString}\\n`);"
-                socket-thread-id))))
-
 ;; Helpers
 
 (export-always 'load-url)

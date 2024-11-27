@@ -221,25 +221,6 @@
              thread-id thread-id))
     (values thread-id socket-thread socket-path)))
 
-(export-always 'on)
-(defmethod on ((web-contents web-contents) event-name code)
-  (message
-   web-contents
-   (format nil "~a.on('~a', () => {~a})" (remote-symbol web-contents) event-name code)))
-
-(export-always 'on-event)
-(defmethod on-event ((web-contents web-contents) event-name callback)
-  (let ((socket-thread-id
-          (create-node-socket-thread (lambda (response)
-                                       (declare (ignore response))
-                                       (funcall callback web-contents))
-                                     :interface (interface web-contents))))
-    (on web-contents event-name
-        (format nil
-                "jsonString = JSON.stringify([]);
-                 ~a.write(`${jsonString}\\n`);"
-                socket-thread-id))))
-
 (export-always 'execute-javascript-synchronous)
 (defmethod execute-javascript-synchronous ((web-contents web-contents) code
                                            &key (user-gesture "false"))

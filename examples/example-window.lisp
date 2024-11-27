@@ -9,12 +9,8 @@
   (let ((win (make-instance 'electron:window)))
     (electron:load-url win "https://en.wikipedia.org/wiki/Electron")
     ;; Allow typing any character except "e".
-    (electron:register-before-input-event
-     win
-     (lambda (win input)
-       (declare (ignore win))
-       (print input)
-       (if (string-equal "e" (cdr (assoc :key input)))
-           t
-           nil)))
+    (electron:add-listener win :before-input-event
+                           (lambda (win input) (declare (ignore win))
+                             (print input)
+                             (if (string-equal "e" (assoc-value input :key)) t nil)))
     win))
