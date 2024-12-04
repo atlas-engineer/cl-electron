@@ -120,8 +120,8 @@ For each instruction it writes the result back to it."
                                             ,@(mapcar #'uiop:native-namestring
                                                       (list (server-path interface)
                                                             (server-socket-path interface))))
-                                    :output t
-                                    :error-output t
+                                    :output :interactive
+                                    :error-output :interactive
                                     :directory (asdf:system-source-directory :cl-electron)))
          ;; Block until the server is listening.
          (loop until (handler-case (server-running-p interface)
