@@ -155,7 +155,8 @@ For each instruction it writes the result back to it."
                          (lambda ()
                            (create-socket callback
                                           :path socket-path
-                                          :ready-semaphore ready-semaphore)))))
+                                          :ready-semaphore ready-semaphore))
+                         :name (format nil "cl-electron-~a" id))))
     (push socket-thread (socket-threads interface))
     (values id socket-thread socket-path)))
 
