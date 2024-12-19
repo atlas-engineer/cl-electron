@@ -53,8 +53,7 @@
 (defun electron-views-example ()
   (setf electron:*interface* (make-instance 'electron:interface))
   (electron:launch)
-  ;; FIXME setting frame to true on macOS messes up the geometry of the layout.
-  (let ((win (make-instance 'electron:window :options "{frame: false}")))
+  (let ((win (make-instance 'electron:window)))
     (make-instance 'main-view :window win)
     (make-instance 'modeline :window win)
     (make-instance 'prompt :window win)

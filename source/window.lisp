@@ -85,6 +85,14 @@
     window
     (format nil "JSON.stringify(~a.getBounds())" (remote-symbol window)))))
 
+(export-always 'get-content-bounds)
+(defmethod get-content-bounds ((window window))
+  "Return Rectangle object of WINDOW."
+  (json:decode-json-from-string
+   (message
+    window
+    (format nil "JSON.stringify(~a.getContentBounds())" (remote-symbol window)))))
+
 (defun format-rectangle (&key x y width height)
   "Encode Rectangle object."
   (format nil "{~{~A~^, ~}}"
@@ -146,7 +154,7 @@ of WINDOW's views is reset such VIEW is shown as the topmost."
 (export-always 'add-bounded-view)
 (defmacro add-bounded-view (window view &key z-index window-bounds-alist-var x y width height)
   `(progn
-     (let ((,window-bounds-alist-var (get-bounds ,window)))
+     (let ((,window-bounds-alist-var (get-content-bounds ,window)))
        (set-bounds ,view :x ,x :y ,y :width ,width :height ,height))
      ;; As to avoid adding an existing listener.  Note that `add-bounded-view'
      ;; can be called multiple times over the same view and window, as to show
@@ -154,7 +162,7 @@ of WINDOW's views is reset such VIEW is shown as the topmost."
      (unless (find ,view (views ,window))
        (add-listener ,window :resize
                      (lambda (win)
-                       (let ((,window-bounds-alist-var (get-bounds win)))
+                       (let ((,window-bounds-alist-var (get-content-bounds win)))
                          (set-bounds ,view :x ,x :y ,y :width ,width :height ,height)))))
      ;; `add-view' is called after `set-bounds', since it pushes view into
      ;; `views'.
