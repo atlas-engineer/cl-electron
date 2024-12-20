@@ -13,7 +13,7 @@
                              :privileges "{}")
               (make-instance 'electron:protocol
                              :scheme-name "font"
-                             :privileges "{}")))
+                             :privileges "{secure:true}")))
   (electron:launch electron:*interface*)
   (let* ((protocols (electron:protocols electron:*interface*))
          (font-path (asdf:system-relative-pathname :cl-electron
@@ -24,9 +24,7 @@
                      "() => {return new Response('')}")
     (electron:handle-callback (find "font" protocols
                                     :key #'electron:scheme-name :test #'string-equal)
-                              (lambda (_)
-                                (declare (ignore _))
-                                (values font "application/x-font-ttf"))))
+                              (lambda (_) (declare (ignore _)) font)))
   (let ((win (make-instance 'electron:window)))
     (electron:load-url win "test:dummy-var")
     (electron:execute-javascript-synchronous
