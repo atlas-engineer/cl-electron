@@ -142,7 +142,7 @@ When Z-INDEX is omitted, its value corresponds to `view-count' (such that VIEW
 is shown as the topmost).
 
 When VIEW is already bound to window and Z-INDEX is omitted, the Z-INDEX of all
-of WINDOW's views is reset such VIEW is shown as the topmost."
+of WINDOW's views is reset such that VIEW is shown as the topmost."
   (pushnew view (views window))
   (message
    window
