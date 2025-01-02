@@ -374,6 +374,7 @@ were added.  When ONCE-P is non-nil, the callback runs once."))
                          (event (eql :before-input-event))
                          (callback function)
                          &key once-p)
+  (declare (ignore once-p))
   (let ((synchronous-socket-id (create-node-synchronous-socket-thread
                                 (lambda (input)
                                   (cl-json:encode-json-to-string
