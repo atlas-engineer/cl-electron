@@ -19,6 +19,16 @@ dialog.showErrorBox = function(title, content) {
     console.log(`${title}\n${content}`);
 };
 
+// Generate Unique IDs for variable names.
+var GLOBALS = {};
+var uid = (function() {
+  var id = 0;
+  return function() {
+    if (arguments[0] === 0) id = 0;
+    return id++;
+  }
+})();
+
 emitter.setMaxListeners(0)
 
 app.on('ready', () => {
