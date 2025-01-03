@@ -248,12 +248,15 @@ Particularly useful to avoid errors on already terminated threads."
     :type (or web-contents null)
     :documentation "The `web-contents' object bound to the view.")
    (options
-    ""
+    nil
+    :accessor nil
+    :type (or string null)
+    :documentation "A string that specifies the views's behavior.")
+   (web-preferences
+    nil
     :export t
-    :reader t
-    :writer nil
-    :type string
-    :documentation "A string that specifies the views's behavior."))
+    :type (or web-preferences null)
+    :documentation "An object that encodes the web preferences for a given view."))
   (:export-class-name-p t)
   (:export-predicate-name-p t)
   (:export-accessor-names-p t)
