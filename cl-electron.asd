@@ -27,6 +27,7 @@
                  (:file "window" :depends-on ("package" "core"))
                  (:file "view" :depends-on ("package" "core"))
                  (:file "web-contents" :depends-on ("package" "core"))
+                 (:file "session" :depends-on ("package" "core"))
                  (:file "protocol" :depends-on ("package" "core")))))
   :in-order-to ((test-op (test-op "cl-electron/tests"))))
 
@@ -45,6 +46,7 @@
   :depends-on (cl-electron lass spinneret)
   :components ((:file "package")
                (:file "example-window")
+               (:file "example-download")
                (:file "example-views")
                (:file "example-web-preferences")
                (:file "example-protocol")

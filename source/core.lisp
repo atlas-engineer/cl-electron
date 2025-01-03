@@ -294,12 +294,35 @@ window."))
   '(and list (satisfies list-of-views-p)))
 
 (define-class web-contents (remote-object)
-  ()
+  ((session
+    nil
+    :export t
+    :reader nil
+    :writer t
+    :type (or session null)
+    :documentation "The `session' object bound to `web-contents'."))
   (:export-class-name-p t)
   (:export-predicate-name-p t)
   (:export-accessor-names-p t)
   (:documentation "It is responsible for rendering and controlling a web page
 (via events)."))
+
+(define-class session (remote-object)
+  ((download-items (make-hash-table :test 'equal)))
+  (:export-class-name-p t)
+  (:export-predicate-name-p t)
+  (:export-accessor-names-p t)
+  (:documentation "Manage browser sessions, cookies, cache, proxy settings, etc."))
+
+(define-class download-item (remote-object)
+  ((url "")
+   (state "")
+   (received-bytes 0)
+   (total-bytes 0))
+  (:export-class-name-p t)
+  (:export-predicate-name-p t)
+  (:export-accessor-names-p t)
+  (:documentation "Represents a download item."))
 
 (define-class protocol (remote-object)
   ((scheme-name

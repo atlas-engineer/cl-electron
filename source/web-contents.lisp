@@ -183,11 +183,15 @@
 
 (export-always 'session)
 (defmethod session ((web-contents web-contents))
-  (let ((new-id (new-id)))
-    (message
-     web-contents
-     (format nil "~a = ~a.session" new-id (remote-symbol web-contents)))
-    new-id))
+  (or (slot-value web-contents 'session)
+      (let ((new-id (new-id)))
+        (message
+         web-contents
+         (format nil "~a = ~a.session" new-id (remote-symbol web-contents)))
+        (setf (slot-value web-contents 'session)
+              (make-instance 'session
+                             :remote-symbol new-id
+                             :interface (interface web-contents))))))
 
 (defun %quote-js (js-code)
   "Replace each backslash with 2 (unless a \" follows it) and escape backquotes."
