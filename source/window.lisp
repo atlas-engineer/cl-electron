@@ -169,13 +169,14 @@ of WINDOW's views is reset such that VIEW is shown as the topmost."
      (add-view ,window ,view :z-index ,z-index)))
 
 (export-always 'remove-view)
-(defmethod remove-view ((window window) (view view))
+(defmethod remove-view ((window window) (view view) &key (kill-view-p t))
   (setf (views window) (remove view (views window)))
   (message
    window
    (format nil "~a.contentView.removeChildView(~a)"
            (remote-symbol window)
-           (remote-symbol view))))
+           (remote-symbol view)))
+  (when kill-view-p (kill (web-contents view))))
 
 (export-always 'web-contents)
 (defmethod web-contents ((window window))
