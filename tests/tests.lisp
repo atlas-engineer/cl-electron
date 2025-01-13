@@ -7,16 +7,31 @@
 
 (in-package :electron/tests)
 
+(setf electron:*interface* (make-instance 'electron:interface))
+
 (defmacro with-electron-session (&body body)
   `(progn
-     (setf electron:*interface*
-           (make-instance 'electron:interface))
      (electron:launch)
      (let ((win (make-instance 'electron:window :options "{show: false}")))
        (electron:load-url win "https://en.wikipedia.org/wiki/Electron")
        ,@body
-       (electron:kill win))
-     (electron:terminate)))
+       ;; To allow body to be computed.
+       (sleep 0.1))
+     (electron:terminate)
+     ;; So that chaining electron:launch and electron:terminate is safe.
+     (sleep 0.1)))
+
+(define-test launch-terminate-idempotent ()
+  (with-electron-session
+    (with-slots ((original-process electron:process)) electron:*interface*
+      (assert-warning 'simple-warning (assert-false (electron:launch)))
+      (assert-eq original-process
+                 (electron:process electron:*interface*))))
+  (assert-warning 'simple-warning (assert-false (electron:terminate))))
+
+(define-test dangling-server-socket-on-launch ()
+  (open (electron:server-socket-path electron:*interface*) :if-does-not-exist :create)
+  (assert-warning 'simple-warning (with-electron-session t)))
 
 (define-test js-handling-quotes ()
   (with-electron-session

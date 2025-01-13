@@ -104,29 +104,29 @@ For each instruction it writes the result back to it."
 
 (export-always 'launch)
 (defun launch (&optional (interface *interface*))
-  (cond ((alive-p interface)
-         (restart-case (error (make-condition 'duplicate-interface-error))
-           (kill ()
-             :report "Kill the existing interface and start a new one."
-             (terminate interface))))
-        (t
-         (when (uiop:file-exists-p (server-socket-path interface))
-           (restart-case (error (make-condition 'socket-exists-error))
-             (destroy ()
-               :report "Destroy the existing socket."
-               (uiop:delete-file-if-exists (server-socket-path interface)))))
-         (setf (process interface)
-               (uiop:launch-program `("npm" "run" "start" "--"
-                                            ,@(mapcar #'uiop:native-namestring
-                                                      (list (server-path interface)
-                                                            (server-socket-path interface))))
-                                    :output :interactive
-                                    :error-output :interactive
-                                    :directory (asdf:system-source-directory :cl-electron)))
-         ;; Block until the server is listening.
-         (loop until (handler-case (server-running-p interface)
-                       ;; Signals that the server socket doesn't exist.
-                       (iolib/syscalls:enoent () (sleep 0.1)))))))
+  (handler-case (server-running-p interface)
+    (iolib/syscalls:enoent () nil)
+    (iolib/syscalls:econnrefused ()
+      (warn "Sanitizing ~a before launch."
+            (server-socket-path interface))
+      (uiop:delete-file-if-exists (server-socket-path interface)))
+    (:no-error (_)
+      (declare (ignore _))
+      (warn "Connection at ~a already established, nothing to do."
+            (server-socket-path interface))
+      (return-from launch nil)))
+  (setf (process interface)
+        (uiop:launch-program `("npm" "run" "start" "--"
+                                     ,@(mapcar #'uiop:native-namestring
+                                               (list (server-path interface)
+                                                     (server-socket-path interface))))
+                             :output :interactive
+                             :error-output :interactive
+                             :directory (asdf:system-source-directory :cl-electron)))
+  ;; Block until the server is listening.
+  (loop until (handler-case (server-running-p interface)
+                (iolib/syscalls:enoent () (sleep 0.1)))
+        finally (return t)))
 
 (defun create-socket-path (&key (interface *interface*) (id (new-id)))
   "Generate a new path suitable for a socket."
@@ -192,15 +192,13 @@ Particularly useful to avoid errors on already terminated threads."
 
 (export-always 'terminate)
 (defun terminate (&optional (interface *interface*))
-  (when (and (process interface) (uiop:process-alive-p (process interface)))
-    (mapcar #'destroy-thread* (socket-threads interface))
-    ;; `uiop:terminate-process' sends an async signal to delete the socket,
-    ;; meaning that is may persistent for a while. It is safer to delete it
-    ;; right away, otherwise chaining `terminate' and `launch' could raise
-    ;; `socket-exists-error'.
-    (uiop:delete-file-if-exists (server-socket-path interface))
-    (uiop:terminate-process (process interface))
-    (setf (process interface) nil)))
+  (unless (alive-p interface)
+    (warn "Already terminated, nothing to do.")
+    (return-from terminate nil))
+  (mapcar #'destroy-thread* (socket-threads interface))
+  (uiop:terminate-process (process interface))
+  (setf (process interface) nil)
+  t)
 
 (defun new-id ()
   "Generate a new unique ID."
