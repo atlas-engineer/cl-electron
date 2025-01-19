@@ -176,7 +176,7 @@ of WINDOW's views is reset such that VIEW is shown as the topmost."
    (format nil "~a.contentView.removeChildView(~a)"
            (remote-symbol window)
            (remote-symbol view)))
-  (when kill-view-p (kill (web-contents view))))
+  (when kill-view-p (kill view)))
 
 (export-always 'web-contents)
 (defmethod web-contents ((window window))

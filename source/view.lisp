@@ -53,7 +53,8 @@
 
 (export-always 'kill)
 (defmethod kill ((view view))
-  (kill (web-contents view)))
+  (kill (web-contents view))
+  (setf (slot-value view 'web-contents) nil))
 
 (export-always 'focus)
 (defmethod focus ((view view))
