@@ -242,13 +242,8 @@
          (lambda (web-contents result)
            (declare (ignore web-contents))
            (if (equal result "ERROR")
-               (restart-case (error (make-condition 'javascript-renderer-error :code code))
-                 (ignore ()
-                   :report "Ignore error, fulfill promise with string 'ERROR'."
-                   (lparallel:fulfill p result))
-                 (reject ()
-                   :report "Return nil, indicating promise rejection."
-                   (lparallel:fulfill p nil)))
+               (progn (warn "Renderer view error running JavaScript: ~%~a~%" code)
+                      (lparallel:fulfill p result))
                (lparallel:fulfill p result)))
          :user-gesture user-gesture)
       (declare (ignore socket-path thread-id))

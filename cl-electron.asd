@@ -22,7 +22,6 @@
   :components ((:module "source"
                 :components
                 ((:file "package")
-                 (:file "condition" :depends-on ("package"))
                  (:file "core" :depends-on ("package"))
                  (:file "window" :depends-on ("package" "core"))
                  (:file "view" :depends-on ("package" "core"))
