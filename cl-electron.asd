@@ -18,7 +18,8 @@
                cl-ppcre
                nclasses
                bordeaux-threads
-               lparallel)
+               lparallel
+               parse-number)
   :components ((:module "source"
                 :components
                 ((:file "package")

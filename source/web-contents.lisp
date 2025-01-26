@@ -19,9 +19,10 @@
 
 (export-always 'get-zoom-factor)
 (defmethod get-zoom-factor ((web-contents web-contents))
-  (message
-   web-contents
-   (format nil "~a.getZoomFactor()" (remote-symbol web-contents))))
+  (parse-number:parse-number
+   (message
+    web-contents
+    (format nil "~a.getZoomFactor()" (remote-symbol web-contents)))))
 
 (export-always 'set-zoom-level)
 (defmethod set-zoom-level ((web-contents web-contents) level)
@@ -31,9 +32,10 @@
 
 (export-always 'get-zoom-level)
 (defmethod get-zoom-level ((web-contents web-contents))
-  (message
-   web-contents
-   (format nil "~a.getZoomLevel()" (remote-symbol web-contents))))
+  (parse-number:parse-number
+   (message
+    web-contents
+    (format nil "~a.getZoomLevel()" (remote-symbol web-contents)))))
 
 (export-always 'set-audio-muted)
 (defmethod set-audio-muted ((web-contents web-contents) muted)
