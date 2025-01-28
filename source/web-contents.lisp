@@ -15,7 +15,7 @@
 (defmethod set-zoom-factor ((web-contents web-contents) factor)
   (message
    web-contents
-   (format nil "~a.setZoomFactor(\"~f\")" (remote-symbol web-contents) factor)))
+   (format nil "~a.setZoomFactor(~a)" (remote-symbol web-contents) factor)))
 
 (export-always 'get-zoom-factor)
 (defmethod get-zoom-factor ((web-contents web-contents))
