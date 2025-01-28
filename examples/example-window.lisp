@@ -4,7 +4,6 @@
 (in-package :electron/examples)
 
 (defun electron-window-example ()
-  (setf electron:*interface* (make-instance 'electron:interface))
   (electron:launch)
   (let ((win (make-instance 'electron:window)))
     (electron:load-url win "https://en.wikipedia.org/wiki/Electron")

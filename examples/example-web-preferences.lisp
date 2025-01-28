@@ -19,7 +19,6 @@
                                                   "1 + 1")))
 
 (defun electron-web-preferences-example ()
-  (setf electron:*interface* (make-instance 'electron:interface))
   (electron:launch)
   ;; Note: WebPreferences can only be set during object creation!
   (let ((win (make-instance 'electron:window)))

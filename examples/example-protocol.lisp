@@ -4,10 +4,7 @@
 (in-package :electron/examples)
 
 (defun electron-protocol-example ()
-  (setf electron:*interface*
-        (make-instance 'electron:interface)
-
-        (electron:protocols electron:*interface*)
+  (setf (electron:protocols electron:*interface*)
         (list (make-instance 'electron:protocol
                              :scheme-name "test"
                              :privileges "{}")))

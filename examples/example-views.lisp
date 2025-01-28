@@ -51,7 +51,6 @@
   (electron:load-url prompt "about:blank"))
 
 (defun electron-views-example ()
-  (setf electron:*interface* (make-instance 'electron:interface))
   (electron:launch)
   (let ((win (make-instance 'electron:window)))
     (make-instance 'main-view :window win)

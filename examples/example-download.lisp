@@ -4,7 +4,6 @@
 (in-package :electron/examples)
 
 (defun electron-download-example ()
-  (setf electron:*interface* (make-instance 'electron:interface))
   (electron:launch)
   (let* ((win (make-instance 'electron:window))
          (session (electron:session (electron:web-contents win))))
