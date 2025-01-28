@@ -17,11 +17,12 @@
     :reader t
     :writer nil
     :documentation "The directory where sockets are stored.")
-   (server-socket-name
-    "electron.socket"
+   (server-socket-path
+    #P""
     :export t
-    :documentation "The name of the server socket.
-See `server-socket-path'.")
+    :reader t
+    :writer nil
+    :documentation "The path of the server socket.")
    (socket-threads
     '()
     :documentation "A list of threads connected to sockets used by the system.")
@@ -56,12 +57,9 @@ required to be registered there."))
   (:export-accessor-names-p t)
   (:documentation "Interface with an Electron instance."))
 
-(export-always 'server-socket-path)
-(defmethod server-socket-path ((interface interface))
-  "The Electron process listens to this socket to execute JavaScript.
-For each instruction it writes the result back to it."
-  (with-slots (sockets-directory server-socket-name) interface
-    (uiop:merge-pathnames* sockets-directory server-socket-name)))
+(defmethod initialize-instance :after ((interface interface) &key)
+  (setf (slot-value interface 'server-socket-path)
+        (uiop:merge-pathnames* (sockets-directory interface) "electron.socket")))
 
 (export-always 'server-running-p)
 (defmethod server-running-p ((interface interface))
