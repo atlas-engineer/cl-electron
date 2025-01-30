@@ -16,8 +16,8 @@
         "repl": "electron -i"
     },
     "devDependencies": {
-        "electron": "32.2.5",
-        "electron-builder": "^24.13.3"
+        "electron": "^32.0.0",
+        "electron-builder": "^25.0.0"
     },
     "dependencies": {
         "synchronous-socket": "^0.0.1"
