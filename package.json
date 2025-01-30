@@ -10,13 +10,13 @@
     },
     "homepage": "https://github.com/atlas-engineer/cl-electron/",
     "scripts": {
-        "postinstall": "electron-builder install-app-deps",
+        "postinstall": "sed 's/^#include .nan_scriptorigin\\.h./\\/\\/ #include nan_scriptorigin.h/' ./node_modules/nan/nan.h > ./node_modules/nan/nan.h.new && mv ./node_modules/nan/nan.h.new ./node_modules/nan/nan.h && electron-builder install-app-deps",
         "start": "electron",
         "debug": "electron --inspect",
         "repl": "electron -i"
     },
     "devDependencies": {
-        "electron": "^32.0.0",
+        "electron": "^33.0.0",
         "electron-builder": "^25.0.0"
     },
     "dependencies": {
