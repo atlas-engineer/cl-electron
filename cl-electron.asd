@@ -19,7 +19,8 @@
                nclasses
                bordeaux-threads
                lparallel
-               parse-number)
+               parse-number
+               babel)
   :components ((:module "source"
                 :components
                 ((:file "package")
