@@ -16,6 +16,10 @@
 (defmethod handle-content ((protocol protocol) content)
   (handle protocol (format nil "() => {return new Response('~a')}" content)))
 
+(defun base64-encode-utf8 (input-string)
+  (let ((utf8-bytes (babel:string-to-octets input-string)))
+    (cl-base64:usb8-array-to-base64-string utf8-bytes)))
+
 (export-always 'handle-callback)
 (defmethod handle-callback ((protocol protocol) callback)
   (let ((socket-thread-id
@@ -28,7 +32,7 @@
                               ((simple-array (unsigned-byte 8))
                                (cl-base64:usb8-array-to-base64-string data-string))
                               (string
-                               (cl-base64:string-to-base64-string data-string))
+                               (base64-encode-utf8 data-string))
                               (null "")))
                       (cons "dataType" (or data-type "text/html;charset=utf8"))))))
            :interface (interface protocol))))
