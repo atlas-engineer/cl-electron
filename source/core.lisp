@@ -369,16 +369,21 @@ See https://www.electronjs.org/docs/latest/api/structures/custom-scheme."))
 (export-always 'add-listener)
 (defgeneric add-listener (object event-name callback &key once-p)
   (:method (object (event-name symbol) (callback function) &key once-p)
-    (message
-     object
-     (format-listener object
-                      event-name
-                      ;; Send dummy JSON data to trigger the callback.
-                      (format nil "() => {~a.write(`${JSON.stringify('')}\\n`)}"
-                              (create-node-socket-thread (lambda (_) (declare (ignore _))
-                                                           (funcall callback object))
-                                                         :interface (interface object)))
-                      :once-p once-p)))
+    (multiple-value-bind (thread-id socket-thread socket-path)
+        (create-node-socket-thread (lambda (_) (declare (ignore _))
+                                     (funcall callback object))
+                                   :interface (interface object))
+      (declare (ignore socket-path))
+      (push socket-thread (socket-threads object))
+      (message
+       object
+       (format-listener object
+                        event-name
+                        ;; Send dummy JSON data to trigger the callback.
+                        (format nil "() => {~a.write(`${JSON.stringify('')}\\n`)}"
+                                thread-id)
+                        :once-p once-p))
+      socket-thread))
   (:documentation "Register CALLBACK for OBJECT on event EVENT-NAME.
 
 Since the argument signature of callbacks differs depending on the event,
@@ -394,13 +399,16 @@ were added.  When ONCE-P is non-nil, the callback runs once."))
                          (callback function)
                          &key once-p)
   (declare (ignore once-p))
-  (let ((synchronous-socket-id (create-node-synchronous-socket-thread
-                                (lambda (input)
-                                  (cl-json:encode-json-to-string
-                                   (list (cons "preventDefault"
-                                               (apply callback (cons object
-                                                                     input))))))
-                                :interface (interface object))))
+  (multiple-value-bind (thread-id socket-thread socket-path)
+      (create-node-synchronous-socket-thread
+       (lambda (input)
+         (cl-json:encode-json-to-string
+          (list (cons "preventDefault"
+                      (apply callback (cons object
+                                            input))))))
+       :interface (interface object))
+    (declare (ignore socket-path))
+    (push socket-thread (socket-threads object))
     (message
      object
      (format-listener (if (web-contents-p object) object (web-contents object))
@@ -413,5 +421,5 @@ were added.  When ONCE-P is non-nil, the callback runs once."))
                                    event.preventDefault();
                                  }
                                }"
-                              synchronous-socket-id
-                              synchronous-socket-id)))))
+                              thread-id
+                              thread-id)))))

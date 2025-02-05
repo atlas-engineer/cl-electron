@@ -19,6 +19,7 @@
 
 (export-always 'kill)
 (defmethod kill ((window window))
+  (mapcar #'destroy-thread* (socket-threads window))
   (message
    window
    (format nil "~a.close()" (remote-symbol window))))
@@ -160,10 +161,14 @@ of WINDOW's views is reset such that VIEW is shown as the topmost."
      ;; can be called multiple times over the same view and window, as to show
      ;; the former on top.
      (unless (find ,view (views ,window))
-       (add-listener ,window :resize
-                     (lambda (win)
-                       (let ((,window-bounds-alist-var (get-content-bounds win)))
-                         (set-bounds ,view :x ,x :y ,y :width ,width :height ,height)))))
+       ;; Even though the listener is added to window, it must be removed when
+       ;; the view is removed from it.
+       (push (add-listener ,window :resize
+                           (lambda (win)
+                             (let ((,window-bounds-alist-var (get-content-bounds win)))
+                               (set-bounds ,view
+                                           :x ,x :y ,y :width ,width :height ,height))))
+             (socket-threads ,view)))
      ;; `add-view' is called after `set-bounds', since it pushes view into
      ;; `views'.
      (add-view ,window ,view :z-index ,z-index)))

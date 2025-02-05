@@ -167,6 +167,7 @@
 
 (export-always 'kill)
 (defmethod kill ((web-contents web-contents))
+  (mapcar #'destroy-thread* (socket-threads web-contents))
   (message
    web-contents
    (format nil "~a.close()" (remote-symbol web-contents))))

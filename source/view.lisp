@@ -53,6 +53,7 @@
 
 (export-always 'kill)
 (defmethod kill ((view view))
+  (mapcar #'destroy-thread* (socket-threads view))
   (kill (web-contents view))
   (setf (slot-value view 'web-contents) nil))
 
