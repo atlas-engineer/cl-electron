@@ -55,19 +55,39 @@
         (ps:ps (setf (ps:chain document (get-elements-by-tag-name "html") 0 |innerHTML|)
                      (ps:lisp html))))))))
 
+(defun socket-connections-count ()
+  (parse-integer
+   (uiop:run-program (format nil "ss -x | grep ~a | wc -l"
+                             (electron:sockets-directory electron:*interface*))
+                     :output '(:string :stripped t)
+                     :ignore-error-status t)))
+
 (define-test sanitize-ipc-communication ()
   (with-electron-session
-    (electron:add-listener win :before-input-event
-                           (lambda (win input) (declare (ignore win)) (print input) t))
-    (electron:add-listener (electron:web-contents win) :did-finish-load
-                           (lambda (web-contents) (declare (ignore web-contents)) t))
-    (dotimes (n 2000)
-      (electron:execute-javascript-synchronous (electron:web-contents win)
-                                               (ps:ps "hello world!"))))
-  (let ((dir (electron:sockets-directory electron:*interface*)))
-    ;; No dangling connections.
-    (assert-true (uiop:emptyp (uiop:run-program (format nil "ss -ax | grep ~a" dir)
-                                                :output '(:string :stripped t)
-                                                :ignore-error-status t)))
-    ;; No dangling socket files.
-    (assert-false (uiop:directory-files dir))))
+    (assert-number-equal
+     (socket-connections-count)
+     (progn
+       (dotimes (n 2000)
+         (electron:execute-javascript-synchronous (electron:web-contents win)
+                                                  (ps:ps "hello world!")))
+       (socket-connections-count)))
+    (assert-number-equal
+     (socket-connections-count)
+     (let ((view (make-instance 'electron:view)))
+       (electron:add-bounded-view win
+                                  view
+                                  :window-bounds-alist-var bounds
+                                  :width (alexandria:assoc-value bounds :width))
+       (electron:add-listener (electron:web-contents win) :did-finish-load
+                              (lambda (web-contents) (declare (ignore web-contents)) t))
+       (electron:add-listener win :before-input-event
+                              (lambda (win input) (declare (ignore win input)) t))
+       (electron:remove-view win view :kill-view-p t)
+       (electron:kill (electron:web-contents win))
+       (electron:kill win)
+       (socket-connections-count))))
+
+  ;; No dangling connections.
+  (assert-number-equal 0 (socket-connections-count))
+  ;; No dangling socket files.
+  (assert-false (uiop:directory-files (electron:sockets-directory electron:*interface*))))
