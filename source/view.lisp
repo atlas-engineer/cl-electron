@@ -60,6 +60,10 @@
 (defmethod focus ((view view))
   (focus (web-contents view)))
 
+(export-always 'select-all)
+(defmethod select-all ((view view))
+  (select-all (web-contents view)))
+
 (export-always 'get-url)
 (defmethod get-url ((view view))
   (get-url (web-contents view)))
