@@ -21,6 +21,8 @@
 (defun electron-web-preferences-example ()
   (electron:launch)
   ;; Note: WebPreferences can only be set during object creation!
-  (let ((win (make-instance 'electron:window)))
-    (make-instance 'example-view :window win :options "{webPreferences: {images: false}}")
+  (let ((win (make-instance 'electron:window))
+        (preferences (make-instance 'electron:web-preferences)))
+    (electron:add-preference preferences "images" nil)
+    (make-instance 'example-view :window win :web-preferences preferences)
     win))
