@@ -196,6 +196,20 @@
                              :remote-symbol new-id
                              :interface (interface web-contents))))))
 
+(export-always 'override-window-open-handler)
+(defmethod override-window-open-handler ((web-contents web-contents) callback)
+  (message
+   web-contents
+   (format nil "~a.setWindowOpenHandler((details) => {
+                    ~a.write(JSON.stringify(details) + '\\\n');
+                    return { action: 'deny' };
+                });"
+	       (remote-symbol web-contents)
+	       (create-node-socket-thread (lambda (response)
+						                (funcall callback response)
+						                (destroy-thread* (bt:current-thread)))
+					                  :interface (interface web-contents)))))
+
 (defun %quote-js (js-code)
   "Replace each backslash with 2 (unless a \" follows it) and escape backquotes."
   (ppcre:regex-replace-all "`"
