@@ -131,20 +131,23 @@ required to be registered there."))
   (uiop:merge-pathnames* (sockets-directory interface) (format nil "~a.socket" id)))
 
 (defun create-socket (callback &key ready-semaphore (path (create-socket-path)))
-  (handler-case
-      (iolib:with-open-socket (s :address-family :local
-                                 :connect :passive
-                                 :local-filename path)
-        (isys:chmod path #o600)
-        (when ready-semaphore (bt:signal-semaphore ready-semaphore))
-        (iolib:with-accept-connection (connection s)
-          (loop for message = (ignore-errors (read-line connection nil))
-                for decoded-object = (cl-json:decode-json-from-string message)
-                for callback-result = (funcall callback decoded-object)
-                when (stringp callback-result)
-                  do (write-line (concatenate 'string callback-result "") connection)
-                     (finish-output connection))))
-    (iolib/syscalls:eaddrinuse () (warn "~a already in use." path))))
+  (unwind-protect
+       (handler-case
+           (iolib:with-open-socket (s :address-family :local
+                                      :connect :passive
+                                      :local-filename path)
+             (isys:chmod path #o600)
+             (when ready-semaphore (bt:signal-semaphore ready-semaphore))
+             (iolib:with-accept-connection (connection s)
+               (loop for message = (ignore-errors (read-line connection nil))
+                     for decoded-object = (cl-json:decode-json-from-string message)
+                     for callback-result = (funcall callback decoded-object)
+                     when (stringp callback-result)
+                       do (write-line (concatenate 'string callback-result "")
+                                      connection)
+                          (finish-output connection))))
+         (iolib/syscalls:eaddrinuse () (warn "~a already in use." path)))
+    (uiop:delete-file-if-exists path)))
 
 (defun create-socket-thread (callback &key ready-semaphore (interface *interface*))
   (let* ((id (new-id))
