@@ -104,16 +104,24 @@ required to be registered there."))
       (warn "Connection at ~a already established, nothing to do."
             (server-socket-path interface))
       (return-from launch nil)))
-  (setf (process interface)
-        (uiop:launch-program (list "npm" "run" "start" "--"
-                                   (uiop:native-namestring (server-path interface))
-                                   (uiop:native-namestring (server-socket-path interface))
-                                   (if (protocols interface)
-                                       (register (protocols interface))
-                                       ""))
-                             :output :interactive
-                             :error-output :interactive
-                             :directory (asdf:system-source-directory :cl-electron)))
+  (let* ((appdir (uiop:getenv-pathname "APPDIR" :ensure-directory t))
+         (executable-command
+           (if appdir
+               (list (format nil "~ausr/bin/cl-electron-server" appdir))
+               (list "npm" "run" "start" "--")))
+         (execution-directory
+           (if appdir
+               (format nil "~ausr/bin/" appdir)
+               (asdf:system-source-directory :cl-electron))))
+    (setf (process interface)
+          (uiop:launch-program
+           (append executable-command
+                   (list (uiop:native-namestring (server-path interface))
+                         (uiop:native-namestring (server-socket-path interface))
+                         (register (protocols interface))))
+           :output :interactive
+           :error-output :interactive
+           :directory execution-directory)))
   ;; Block until the server is listening.
   (loop until (handler-case (server-running-p interface)
                 (iolib/syscalls:enoent () (sleep 0.1)))
@@ -348,10 +356,12 @@ See https://www.electronjs.org/docs/latest/api/structures/custom-scheme."))
 (defun register (protocols)
   "Internal function, see the SETF method of `protocols' for the user-facing API."
   (declare (type list-of-protocols protocols))
-  (format nil "protocol.registerSchemesAsPrivileged([~{{scheme:'~a',privileges:~a}~^, ~}]);"
-          (loop for protocol in protocols
-                collect (scheme-name protocol)
-                collect (privileges protocol))))
+  (if protocols
+      (format nil "protocol.registerSchemesAsPrivileged([~{{scheme:'~a',privileges:~a}~^, ~}]);"
+              (loop for protocol in protocols
+                    collect (scheme-name protocol)
+                    collect (privileges protocol)))
+      ""))
 
 (export-always 'format-listener)
 (defun format-listener (object event-name callback-string &key once-p)
