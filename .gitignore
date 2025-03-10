@@ -61,3 +61,4 @@ jspm_packages/
 
 # Ignore build output directory of Node.js FFI.
 build
+dist
