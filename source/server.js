@@ -1,35 +1,21 @@
 // SPDX-FileCopyrightText: Atlas Engineer LLC
 // SPDX-License-Identifier: BSD-3-Clause
 
-/////////////////////////////////////////////////////////////
-// Start a Javascript server that will eval code received. //
-/////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
+// Start a Javascript server that will eval code received.
+////////////////////////////////////////////////////////////////////////
 
 const path = require('node:path')
 const nodejs_net = require('node:net');
 const fs = require('node:fs');
 const emitter = require('node:events');
-// The architecture of protocol handling resorts to a tmp file, meaning that the
-// main JS location may differ from the location of the current file.
-const SynchronousSocket = require(path.resolve('node_modules/synchronous-socket'));
-const { app, ipcMain, BrowserWindow, WebContentsView, webContents, protocol, net, dialog } = require('electron')
+const SynchronousSocket = require('synchronous-socket');
+const { protocol } = require('electron')
 
-// Disable error dialogs
-dialog.showErrorBox = function(title, content) {
-    console.log(`${title}\n${content}`);
-};
+// Eval and register protocols before we start Electron.
+eval(process.argv.at(-1));
 
-// Generate Unique IDs for variable names.
-var GLOBALS = {};
-var uid = (function() {
-  var id = 0;
-  return function() {
-    if (arguments[0] === 0) id = 0;
-    return id++;
-  }
-})();
-
-emitter.setMaxListeners(0)
+const { app, ipcMain, BrowserWindow, WebContentsView, webContents, net, dialog } = require('electron')
 
 app.on('ready', () => {
     const server = nodejs_net.createServer((socket) => {
@@ -42,16 +28,31 @@ app.on('ready', () => {
             }
         });
     });
-    server_socket_path = process.argv.at(-1);
+    server_socket_path = process.argv.at(-2);
     server.listen(server_socket_path, () => {
         fs.chmodSync(server_socket_path, 0o600)
     });
 });
 
-////////////////////////////////////////////////////////////////////////////////
-// Handle long messages from a socket and combine them into a single message. //
-////////////////////////////////////////////////////////////////////////////////
+// Disable error dialogs.
+dialog.showErrorBox = function(title, content) {
+    console.log(`${title}\n${content}`);
+};
 
+// Do not limit the amount of possible listeners.
+emitter.setMaxListeners(0)
+
+// Generate Unique IDs for variable names.
+var GLOBALS = {};
+var uid = (function() {
+  var id = 0;
+  return function() {
+    if (arguments[0] === 0) id = 0;
+    return id++;
+  }
+})();
+
+// Handle long messages from a socket and combine them into a single message.
 class ProtocolSocket {
     constructor(socket, onDataFunction) {
         this.socket = socket;

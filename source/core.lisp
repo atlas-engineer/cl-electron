@@ -74,19 +74,10 @@ required to be registered there."))
   (with-slots (process) interface
     (and process (uiop:process-alive-p process))))
 
-(defun to-tmp-file (pathname &optional s)
-  "Return the pathname of tmp file featuring the concatenation of file PATHNAME and string S."
-  (uiop:with-temporary-file (:pathname p :keep t :type "js")
-    (uiop:copy-file pathname p)
-    (when s
-      (with-open-file (f p :direction :output :if-exists :append) (write-sequence s f)))
-    p))
-
 (defmethod (setf protocols) (value (interface interface))
   (if (alive-p interface)
       (error "Protocols need to be set before launching ~a." interface)
       (with-slots (protocols server-path) interface
-        (setf server-path (to-tmp-file server-path (register value)))
         (setf protocols value))))
 
 (defmethod interface-equal ((interface1 interface) (interface2 interface))
@@ -114,10 +105,12 @@ required to be registered there."))
             (server-socket-path interface))
       (return-from launch nil)))
   (setf (process interface)
-        (uiop:launch-program `("npm" "run" "start" "--"
-                                     ,@(mapcar #'uiop:native-namestring
-                                               (list (server-path interface)
-                                                     (server-socket-path interface))))
+        (uiop:launch-program (list "npm" "run" "start" "--"
+                                   (uiop:native-namestring (server-path interface))
+                                   (uiop:native-namestring (server-socket-path interface))
+                                   (if (protocols interface)
+                                       (register (protocols interface))
+                                       ""))
                              :output :interactive
                              :error-output :interactive
                              :directory (asdf:system-source-directory :cl-electron)))
