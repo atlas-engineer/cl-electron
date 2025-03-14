@@ -355,7 +355,7 @@ See https://www.electronjs.org/docs/latest/api/structures/custom-scheme."))
 
 (defun register (protocols)
   "Internal function, see the SETF method of `protocols' for the user-facing API."
-  (declare (type list-of-protocols protocols))
+  (declare (type (or list-of-protocols null) protocols))
   (if protocols
       (format nil "protocol.registerSchemesAsPrivileged([~{{scheme:'~a',privileges:~a}~^, ~}]);"
               (loop for protocol in protocols
