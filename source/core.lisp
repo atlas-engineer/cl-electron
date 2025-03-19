@@ -104,15 +104,10 @@ required to be registered there."))
       (warn "Connection at ~a already established, nothing to do."
             (server-socket-path interface))
       (return-from launch nil)))
-  (let* ((appdir (uiop:getenv-pathname "APPDIR" :ensure-directory t))
-         (executable-command
-           (if appdir
-               (list (format nil "~ausr/bin/cl-electron-server" appdir))
-               (list "npm" "run" "start" "--")))
-         (execution-directory
-           (if appdir
-               (format nil "~ausr/bin/" appdir)
-               (asdf:system-source-directory :cl-electron))))
+  (let ((executable-command
+          (if (uiop:getenv "APPDIR")
+              (list "cl-electron-server")
+              (list "npm" "run" "start" "--"))))
     (setf (process interface)
           (uiop:launch-program
            (append executable-command
@@ -120,8 +115,7 @@ required to be registered there."))
                          (uiop:native-namestring (server-socket-path interface))
                          (register (protocols interface))))
            :output :interactive
-           :error-output :interactive
-           :directory execution-directory)))
+           :error-output :interactive)))
   ;; Block until the server is listening.
   (loop until (handler-case (server-running-p interface)
                 (iolib/syscalls:enoent () (sleep 0.1)))
