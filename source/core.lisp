@@ -111,7 +111,7 @@ required to be registered there."))
                (list "npm" "run" "start" "--")))
          (execution-directory
            (if appdir
-               (format nil "~ausr/bin/" appdir)
+               nil
                (asdf:system-source-directory :cl-electron))))
     (setf (process interface)
           (uiop:launch-program
