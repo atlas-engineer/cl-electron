@@ -62,9 +62,11 @@
 
 (export-always 'is-focused)
 (defmethod is-focused ((window window))
-  (message
-   window
-   (format nil "~a.isFocused()" (remote-symbol window))))
+  (when (string-equal "true"
+                      (message
+                       window
+                       (format nil "~a.isFocused()" (remote-symbol window))))
+    t))
 
 (export-always 'focus)
 (defmethod focus ((window window))
