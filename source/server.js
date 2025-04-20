@@ -17,17 +17,41 @@ eval(process.argv.at(-1));
 
 const { app, ipcMain, BrowserWindow, WebContentsView, webContents, net, dialog } = require('electron')
 
+// Handle long messages from a socket and combine them into a single message.
+class ProtocolSocket {
+    constructor(socket, onDataFunction) {
+        this.socket = socket;
+        this.onDataFunction = onDataFunction;
+        this.messageBuffer = '';
+
+        this.socket.on('data', data => {
+            let dataString = data.toString();
+            let transmissionEndIndex = dataString.indexOf('');
+            if (transmissionEndIndex == -1) {
+                this.messageBuffer += dataString;
+            } else {
+                this.messageBuffer += dataString.substring(0, transmissionEndIndex);
+                this.onDataFunction(this.messageBuffer);
+                this.messageBuffer = dataString.substring(transmissionEndIndex + 1, dataString.length);
+            }
+        });
+    }
+    send(message) {
+        this.socket.write(message + '\n');
+    }
+}
 app.on('ready', () => {
     const server = nodejs_net.createServer((socket) => {
-        socket.on('data', (data) => {
+        const protocolSocket = new ProtocolSocket(socket, (message) => {
             try {
-                const result = eval(data.toString());
-                socket.write(`${result}\n`);
+                const result = eval(message);
+                protocolSocket.send(String(result));
             } catch (err) {
-                socket.write(`${err}\n`);
+                protocolSocket.send(String(err));
             }
         });
     });
+
     server_socket_path = process.argv.at(-2);
     server.listen(server_socket_path, () => {
         fs.chmodSync(server_socket_path, 0o600)
@@ -52,23 +76,4 @@ var uid = (function() {
   }
 })();
 
-// Handle long messages from a socket and combine them into a single message.
-class ProtocolSocket {
-    constructor(socket, onDataFunction) {
-        this.socket = socket;
-        this.onDataFunction = onDataFunction;
-        this.messageBuffer = '';
 
-        this.socket.on('data', data => {
-            let dataString = data.toString();
-            let transmissionEndIndex = dataString.indexOf('');
-            if (transmissionEndIndex == -1) {
-                this.messageBuffer += dataString;
-            } else {
-                this.messageBuffer += dataString.substring(0, transmissionEndIndex);
-                this.onDataFunction(this.messageBuffer);
-                this.messageBuffer = dataString.substring(transmissionEndIndex + 1, dataString.length);
-            }
-        });
-    }
-}

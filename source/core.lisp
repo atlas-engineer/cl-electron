@@ -233,6 +233,7 @@ Particularly useful to avoid errors on already terminated threads."
                              :remote-filename (uiop:native-namestring
                                                (server-socket-path interface)))
     (write-line message-contents s)
+    (write-line "" s)
     (finish-output s)
     (read-line s)))
 
