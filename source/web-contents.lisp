@@ -210,26 +210,30 @@
 						                (destroy-thread* (bt:current-thread)))
 					                  :interface (interface web-contents)))))
 
-(defun %quote-js (js-code)
-  "Replace each backslash with 2 (unless a \" follows it) and escape backquotes."
-  (ppcre:regex-replace-all "`"
-                           (ppcre:regex-replace-all "\\\\(?!\")" js-code "\\\\\\\\")
-                           "\\\\`"))
+(defun format-js-for-eval (js-code)
+  "Escape JavaScript code so it can be safely inserted into a JS eval() call using double quotes."
+  (let* ((escaped-backslashes
+           (ppcre:regex-replace-all "\\\\" js-code "\\\\\\\\")) ; \ → \\
+         (escaped-quotes
+           (ppcre:regex-replace-all "\"" escaped-backslashes "\\\\\"")) ; " → \"
+         (escaped-newlines
+           (ppcre:regex-replace-all "\\n" escaped-quotes "\\\\n"))) ; newline → \n
+    escaped-newlines))
 
 (export-always 'execute-javascript)
 (defmethod execute-javascript ((web-contents web-contents) code &key (user-gesture "false"))
   (message
    web-contents
-   (format nil "~a.executeJavaScript(`~a`, ~a)"
-           (remote-symbol web-contents) (%quote-js code) user-gesture)))
+   (format nil "~a.executeJavaScript(\"~a\", ~a)"
+           (remote-symbol web-contents) (format-js-for-eval code) user-gesture)))
 
 (export-always 'execute-javascript-in-isolated-world)
 (defmethod execute-javascript-in-isolated-world ((web-contents web-contents) world-id code
                                                  &key (user-gesture "false"))
   (message
    web-contents
-   (format nil "~a.executeJavaScript(~a, {code: `~a`}, ~a)"
-           (remote-symbol web-contents) world-id (%quote-js code) user-gesture)))
+   (format nil "~a.executeJavaScript(\"~a\", {code: `~a`}, ~a)"
+           (remote-symbol web-contents) world-id (format-js-for-eval code) user-gesture)))
 
 (export-always 'execute-javascript-with-promise-callback)
 (defmethod execute-javascript-with-promise-callback
@@ -240,11 +244,11 @@
                                  :interface (interface web-contents))
     (message
      web-contents
-     (format nil "~a.executeJavaScript(`~a`, ~a).then((value) => {
+     (format nil "~a.executeJavaScript(\"~a\", ~a).then((value) => {
                     jsonString = JSON.stringify([ value ]);
                     ~a.write(`${jsonString}\\n`);}).catch(error => {
                       ~a.write('[\"ERROR\"]\\n');});"
-             (remote-symbol web-contents) (%quote-js code) user-gesture
+             (remote-symbol web-contents) (format-js-for-eval code) user-gesture
              thread-id thread-id))
     (values thread-id socket-thread socket-path)))
 
