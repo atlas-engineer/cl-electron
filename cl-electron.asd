@@ -25,8 +25,9 @@
                 :components
                 ((:file "package")
                  (:file "core" :depends-on ("package"))
+                 (:file "web-preferences" :depends-on ("package"))
                  (:file "window" :depends-on ("package" "core"))
-                 (:file "view" :depends-on ("package" "core"))
+                 (:file "view" :depends-on ("package" "core" "web-preferences"))
                  (:file "web-contents" :depends-on ("package" "core"))
                  (:file "session" :depends-on ("package" "core"))
                  (:file "protocol" :depends-on ("package" "core")))))
