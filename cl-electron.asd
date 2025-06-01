@@ -29,6 +29,7 @@
                  (:file "view" :depends-on ("package" "core"))
                  (:file "web-contents" :depends-on ("package" "core"))
                  (:file "session" :depends-on ("package" "core"))
+                 (:file "extensions" :depends-on ("package" "core" "session"))
                  (:file "protocol" :depends-on ("package" "core")))))
   :in-order-to ((test-op (test-op "cl-electron/tests"))))
 
