@@ -5,6 +5,16 @@
 
 (in-package :electron)
 
+(export-always 'default-session)
+(defmethod default-session ((interface interface))
+  (let ((new-id (new-id)))
+    (message
+     interface
+     (format nil "~a = session.defaultSession" new-id))
+    (make-instance 'session
+                   :remote-symbol new-id
+                   :interface interface)))
+
 (defmethod add-listener ((session session)
                          (event (eql :download-item-updated))
                          (callback function)
