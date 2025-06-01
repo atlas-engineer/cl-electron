@@ -80,3 +80,13 @@
   (message
    download-item
    (format nil "GLOBALS['~a'].cancel();" (remote-symbol download-item))))
+
+(export-always 'extensions)
+(defmethod extensions ((session session))
+  (let ((new-id (new-id)))
+    (message
+     session
+     (format nil "~a = ~a.extensions;" new-id (remote-symbol session)))
+    (make-instance 'extensions
+                   :remote-symbol new-id
+                   :interface (interface session))))
