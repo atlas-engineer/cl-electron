@@ -15,7 +15,8 @@ const { protocol } = require('electron')
 // Eval and register protocols before we start Electron.
 eval(process.argv.at(-1));
 
-const { app, ipcMain, BrowserWindow, WebContentsView, webContents, net, dialog } = require('electron')
+const { app, ipcMain, BrowserWindow, WebContentsView, webContents,
+        net, dialog, session } = require('electron')
 
 // Handle long messages from a socket and combine them into a single message.
 class ProtocolSocket {
