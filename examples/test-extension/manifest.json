@@ -1,0 +1,14 @@
+{
+  "manifest_version": 2,
+  "name": "Red Background Extension",
+  "version": "1.0",
+  "description": "Changes background color of all pages to red",
+  "permissions": ["scripting"],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
