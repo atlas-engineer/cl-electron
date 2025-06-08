@@ -51,4 +51,5 @@
                (:file "example-views")
                (:file "example-web-preferences")
                (:file "example-protocol")
-               (:file "example-asset")))
+               (:file "example-asset")
+               (:file "example-extension")))
