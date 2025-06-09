@@ -53,4 +53,5 @@
                (:file "example-web-preferences")
                (:file "example-protocol")
                (:file "example-asset")
-               (:file "example-extension")))
+               (:file "example-extension")
+               (:file "example-adblock")))
