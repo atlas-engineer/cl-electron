@@ -5,6 +5,16 @@
 
 (in-package :electron)
 
+(defmethod options ((view view))
+  ;; If `options' is explicitly set, use it.
+  (if (slot-value view 'options)
+      (slot-value view 'options)
+      (format nil "{~@[webPreferences:~a,~] ~@[webContents:~a~]}"
+              (when (web-preferences view)
+                (encode-json (web-preferences view)))
+              (when (slot-value view 'web-contents)
+                (remote-symbol (slot-value view 'web-contents))))))
+
 (defmethod initialize-instance :after ((view view) &key)
   (message
    view
