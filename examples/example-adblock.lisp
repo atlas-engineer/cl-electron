@@ -4,7 +4,7 @@
 (in-package :electron/examples)
 
 (define-class main-view (electron:view)
-  ((url nil)))!
+  ((url nil)))
 
 (defmethod initialize-instance :after ((main-view main-view) &key window)
   (electron:add-bounded-view window
