@@ -54,4 +54,5 @@
                (:file "example-protocol")
                (:file "example-asset")
                (:file "example-extension")
-               (:file "example-adblock")))
+               (:file "example-adblock")
+               (:file "example-context-menu")))
