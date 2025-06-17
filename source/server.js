@@ -16,7 +16,7 @@ const { protocol } = require('electron')
 eval(process.argv.at(-1));
 
 const { app, ipcMain, BrowserWindow, WebContentsView, webContents,
-        net, dialog, session } = require('electron')
+        net, dialog, session, Menu } = require('electron')
 
 // Handle long messages from a socket and combine them into a single message.
 class ProtocolSocket {
