@@ -80,3 +80,27 @@
 (export-always 'is-focused)
 (defmethod is-focused ((view view))
   (is-focused (web-contents view)))
+
+(defmethod add-listener ((object remote-object)
+                         (event (eql :context-menu))
+                         (callback function)
+                         &key once-p)
+  (declare (ignore once-p))
+  (multiple-value-bind (thread-id socket-thread socket-path)
+      (create-node-synchronous-socket-thread
+       (lambda (input)
+         (apply callback (cons object input)))
+       :interface (interface object))
+    (declare (ignore socket-path))
+    (push socket-thread (socket-threads object))
+    (message
+     object
+     (format-listener (if (web-contents-p object) object (web-contents object))
+                      event
+                      (format nil
+                              "(event, params) => {
+                                 ~a.write(JSON.stringify([ params ]) + '\\\n');
+                                 Menu.buildFromTemplate(eval(~a.read())).popup({});
+                               }"
+                              thread-id
+                              thread-id)))))
