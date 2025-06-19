@@ -194,7 +194,7 @@ Particularly useful to avoid errors on already terminated threads."
 
 (export-always 'terminate)
 (defun terminate (&optional (interface *interface*))
-  (unless (alive-p interface)
+  (when (or (not interface) (not (alive-p interface)))
     (warn "Already terminated, nothing to do.")
     (return-from terminate nil))
   (mapcar #'destroy-thread* (socket-threads interface))
