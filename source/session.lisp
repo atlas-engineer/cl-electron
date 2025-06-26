@@ -42,6 +42,9 @@
                                   (received-bytes download-item)
                                   (assoc-value result :received-bytes)
 
+                                  (percent-complete download-item)
+                                  (assoc-value result :percent-complete)
+
                                   (total-bytes download-item)
                                   (assoc-value result :total-bytes))
                             (funcall callback session download-item))))
@@ -61,6 +64,7 @@
                                                             'url': item.getURL(),
                                                             'receivedBytes': item.getReceivedBytes(),
                                                             'totalBytes': item.getTotalBytes(),
+                                                            'percentComplete': item.getPercentComplete(),
                                                             'state': state}) + '\\\n');
                                  })
                                  item.once('done', (event, state) => {
@@ -68,6 +72,7 @@
                                                             'url': item.getURL(),
                                                             'receivedBytes': item.getReceivedBytes(),
                                                             'totalBytes': item.getTotalBytes(),
+                                                            'percentComplete': item.getPercentComplete(),
                                                             'state': state}) + '\\\n');
                                  })
                                }"
