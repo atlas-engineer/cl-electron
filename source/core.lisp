@@ -6,6 +6,10 @@
 
 (in-package :electron)
 
+(alexandria:define-constant +default-wayland-opts+ '("--enable-features=UseOzonePlatform" "--ozone-platform=wayland")
+  :test #'equal
+  :documentation "The default options to be provided to Electron on the wayland platform")
+
 (define-class interface ()
   ((sockets-directory
     #-darwin
@@ -74,6 +78,23 @@ required to be registered there.")
                                                (server-socket-path interface)))
     (iolib:socket-connected-p s)))
 
+(defun wayland-p ()
+  "Whether we are running on Wayland.
+
+We check if WAYLAND_DISPLAY is defined and non-empty, or XDG_SESSION_TYPE
+is 'wayland', which are the recommended ways to detect Wayland."
+  (or (and (uiop:getenv "WAYLAND_DISPLAY")
+           (not (string= (uiop:getenv "WAYLAND_DISPLAY") "")))
+      (string= (uiop:getenv "XDG_SESSION_TYPE") "wayland")))
+
+(defun default-launch-options ()
+  "Return default launch options based on the environment.
+
+At the moment, we only need special options on Wayland"
+  (if (wayland-p)
+      +default-wayland-opts+
+      '()))
+
 (defmethod alive-p ((interface interface))
   "Whether the INTERFACE's Electron process is running."
   (with-slots (process) interface
@@ -117,11 +138,14 @@ required to be registered there.")
          (execution-directory
            (if appdir
                nil
-               (asdf:system-source-directory :cl-electron))))
+               (asdf:system-source-directory :cl-electron)))
+         (execution-launch-opts
+           (or (launch-options interface)
+               (default-launch-options))))
     (setf (process interface)
           (uiop:launch-program
            (append executable-command
-                   (launch-options interface)
+                   execution-launch-opts
                    (list (uiop:native-namestring (server-path interface))
                          (uiop:native-namestring (server-socket-path interface))
                          (register (protocols interface))))
