@@ -51,7 +51,12 @@ The slot can only be set before invoking `launch'.")
 
 All of its content is evaluated before the app signals the ready event.  Not
 meant to be overwritten but rather appended.  For instance, `protocols' are
-required to be registered there."))
+required to be registered there.")
+   (launch-options
+    '()
+    :export t
+    :accessor t
+    :documentation "A list of options to pass to the Electron invocation"))
   (:export-class-name-p t)
   (:export-predicate-name-p t)
   (:export-accessor-names-p t)
@@ -116,6 +121,7 @@ required to be registered there."))
     (setf (process interface)
           (uiop:launch-program
            (append executable-command
+                   (launch-options interface)
                    (list (uiop:native-namestring (server-path interface))
                          (uiop:native-namestring (server-socket-path interface))
                          (register (protocols interface))))
