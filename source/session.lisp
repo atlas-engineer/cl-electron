@@ -30,7 +30,8 @@
                                                   (download-items session))
                                          (make-instance
                                           'download-item
-                                          :remote-symbol (assoc-value result :id))))
+                                          :remote-symbol (assoc-value result :id)
+                                          :url (assoc-value result :url))))
                           (let ((download-item (gethash (assoc-value result :id)
                                                         (download-items session))))
                             (setf (url download-item)
@@ -61,7 +62,8 @@
                                  var id = uid();
                                  GLOBALS[id] = item;
                                  ~a.write(JSON.stringify({'id': id,
-                                                          'state': 'new'}) + '\\\n');
+                                                          'state': 'new',
+                                                          'url': item.getURL(),}) + '\\\n');
                                  item.on('updated', (event, state) => {
                                    ~a.write(JSON.stringify({'id': id,
                                                             'url': item.getURL(),
