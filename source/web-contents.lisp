@@ -157,7 +157,7 @@
 (defmethod insert-text ((web-contents web-contents) text)
   (message
    web-contents
-   (format nil "~a.insertText(~a)" (remote-symbol web-contents) text)))
+   (format nil "~a.insertText(\"~a\")" (remote-symbol web-contents) text)))
 
 (export-always 'select-all)
 (defmethod select-all ((web-contents web-contents))
