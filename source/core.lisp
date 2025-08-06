@@ -91,9 +91,10 @@ is 'wayland', which are the recommended ways to detect Wayland."
   "Return default launch options based on the environment.
 
 At the moment, we only need special options on Wayland"
-  (if (wayland-p)
-      +default-wayland-opts+
-      '()))
+  (cond ((wayland-p) +default-wayland-opts+)
+        ((member :linux *features*)
+         '("--gtk-version=3"))
+        (t '())))
 
 (defmethod alive-p ((interface interface))
   "Whether the INTERFACE's Electron process is running."
