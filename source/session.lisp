@@ -105,3 +105,10 @@
    session
    (format nil "~a.getAllExtensions()" (remote-symbol session))))
 
+(export-always 'clear-cache)
+(defmethod clear-cache ((session session))
+  "Clear SESSION's HTTP cache."
+  (message
+   session
+   (format nil "~a.clearCache()" (remote-symbol session))))
+
